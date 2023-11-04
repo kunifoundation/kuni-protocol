@@ -1,13 +1,10 @@
-# Sample Hardhat Project
+# Amakuni Core Game
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+AMAKUNI is a fully on-chain P2E action RPG with a fixed token supply and fair launch & fair distribution model
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+### GAME
+- AmaGame: core game
+- AmaInv: Craft
+- MiningKuni: mining kuni
+- Referral: referral
+- Scholarship: scholarship
