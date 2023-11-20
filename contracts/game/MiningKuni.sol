@@ -36,6 +36,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     uint256 NUM_OF_BLOCK_PER_DAY = 28800;
     uint256 MAGIC_NUM = 1e12;
     uint256 RATE = 1000;
+    uint256 BLOCK_LIMIT = 200; // 200 block ~ 10 minute
 
     mapping(address => PoolInfo) private poolInfo;
     mapping(address => mapping(address => UserInfo)) public userInfo;
@@ -46,6 +47,8 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     mapping(address => uint256) public gasTemp;
     mapping(address => address) public picGE;
     mapping(address => bool) public geSupported;
+    uint256 public kuniBlock;
+    uint256 public distanceBock = 0;
     address public coreGame;
 
     event MineKuni(address indexed user, address indexed ge, uint256 amount);
@@ -53,6 +56,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     
     constructor() {
         mintAtBlock = block.number;
+        kuniBlock = block.number;
     }
 
     function getRewardForMiner(uint256 _from, uint256 _to, uint256 _gasUsed) public view returns (uint256) {
@@ -61,29 +65,46 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         return 0;
     }
 
+    function updateBlockNumber() private {
+        (kuniBlock, distanceBock) = getBlockCurrent(kuniBlock, distanceBock);
+    }
+
+    function getBlockCurrent(uint256 _block, uint256 _dist) private view returns(uint256, uint256) {
+        if (_block + _dist >= block.number) return (_block, _dist);
+        if (block.number - _block - _dist < BLOCK_LIMIT) {
+            _block = block.number - _dist;
+        } else {
+            _block = _block + BLOCK_LIMIT;
+            _dist = block.number - _block;
+        }
+        return (_block, _dist);
+    }
+
     function updatePool(address _ge) private {
+        updateBlockNumber();
         PoolInfo storage pool = poolInfo[_ge];
         uint256 geSupply = IERC20(_ge).balanceOf(address(this));
         if (geSupply == 0) {
-            pool.lastRewardBlock = block.number;
+            pool.lastRewardBlock = kuniBlock;
             return;
         }
-        uint256 rewardForMiner = getRewardForMiner(pool.lastRewardBlock, block.number, pool.gasUsed);
+
+        uint256 rewardForMiner = getRewardForMiner(pool.lastRewardBlock, kuniBlock, pool.gasUsed);
         if (rewardForMiner > 0) {
             _mint(address(this), rewardForMiner);
-            mintAtBlock = block.number;
+            mintAtBlock = kuniBlock;
         }
         pool.rewardPerShare = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(geSupply));
-        pool.lastRewardBlock = block.number;
+        pool.lastRewardBlock = kuniBlock;
     }
 
     function _harvest(address _ge, address sender) internal {
         PoolInfo storage pool = poolInfo[_ge];
         UserInfo storage user = userInfo[_ge][sender];
-        if (user.rewardDebtAtBlock < block.number) {
+        if (user.rewardDebtAtBlock < kuniBlock) {
             uint256 reward = (user.amount.mul(pool.rewardPerShare)).div(MAGIC_NUM).sub(user.rewardDebt);
             user.pendingReward = user.pendingReward.add(reward);
-            user.rewardDebtAtBlock = block.number;
+            user.rewardDebtAtBlock = kuniBlock;
             user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
         }
     }
@@ -142,6 +163,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
 
     function gasUsedDeclaration(uint256 gasStart, uint256 gasEnd) override external nonReentrant {
         if (gasStart <= gasEnd) return;
+        updateBlockNumber();
         uint256 _gasUsed = gasStart - gasEnd;
         address geAddr = picGE[msg.sender];
         if (geAddr == address(0x0)) {
@@ -165,17 +187,18 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     function peddingReward(address ge, address sender) external view returns(uint256) {
         UserInfo storage user = userInfo[ge][sender];
         if (user.amount > 0) {
+            (uint256 blockNumber, )= getBlockCurrent(kuniBlock, distanceBock);
             PoolInfo storage pool = poolInfo[ge];
-            uint256 shareReward = getReward2Share(ge, pool);
+            uint256 shareReward = getReward2Share(ge, blockNumber, pool);
             uint256 reward = (user.amount.mul(shareReward).div(MAGIC_NUM)).sub(user.rewardDebt);
             return reward + user.pendingReward;
         }
         return 0;
     }
 
-    function getReward2Share(address _ge, PoolInfo storage pool) internal view returns(uint256) {
+    function getReward2Share(address _ge, uint256 toblock, PoolInfo storage pool) internal view returns(uint256) {
         uint256 geSupply = IERC20(_ge).balanceOf(address(this));
-        uint256 rewardForMiner = getRewardForMiner(pool.lastRewardBlock, block.number, pool.gasUsed);
+        uint256 rewardForMiner = getRewardForMiner(pool.lastRewardBlock, toblock, pool.gasUsed);
         return pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(geSupply));
     }
 
@@ -201,7 +224,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
                 picGE[minters[inx]] = _ge;
             }
         }
-        pool.lastRewardBlock = block.number;
+        pool.lastRewardBlock = kuniBlock;
     }
 
     function addCoreGame(address core) external onlyOwner {

@@ -23,14 +23,17 @@ describe('------------- Staking token ------------------', () => {
     [owner, bob, alex, axi, ...addrs] = await ethers.getSigners();
     this.ow = owner
     
-    this.ge     = await (await deployContract('GreenEnergy', [owner.address])).waitForDeployment();
+    this.ge     = await (await deployContract('GreenEnergy')).waitForDeployment();
     // this.ge2    = await (await deployContract('GreenEnergy', [owner.address])).waitForDeployment();
     this.mining = await (await deployContract('MiningKuni')).waitForDeployment();
+
+    await (await this.ge.setMinter(await owner.getAddress())).wait()
 
     tx = await this.ge.mint(bob.address, e100)
     await tx.wait()
     // tx = await this.ge2.mint(alex.address, e100 + e100 )
     // await tx.wait()
+
     log(await this.ge.getAddress(), alex.address)
     tx = await this.mining.addPool(await this.ge.getAddress(), [owner.address, bob.address])
     await tx.wait()
@@ -76,5 +79,7 @@ describe('------------- Staking token ------------------', () => {
     tx = await this.mining.connect(bob).claimKuni(await this.ge.getAddress(), e50)
     await tx.wait()
     log('kuni mining claim: ', (await this.mining.balanceOf(await bob.address))/p16)
+    log('ama:', await this.mining.kuniBlock(), await this.mining.distanceBock())
+
   })
 })

@@ -232,7 +232,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     if (won) {
       stages[msg.sender] = stages[msg.sender] + 1;
     }
-    uint256 myReward = shareReward(reward, tokenIds, itemIds);
+    uint256 myReward = shareReward(reward, tokenIds, itemIds, totalItem);
     unclaimedGE[msg.sender] += myReward;
     emit Fighting(msg.sender, tokenIds, itemIds, myReward, niohPower, won);
     updateBattleBonus();
@@ -246,7 +246,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     _battleBonus[msg.sender] = bonus;
   }
 
-  function shareReward(uint256 reward, uint256[] calldata tokenIds, uint256[][] calldata itemIds) internal returns(uint256) {
+  function shareReward(uint256 reward, uint256[] calldata tokenIds, uint256[][] calldata itemIds, uint256 totalItem) internal returns(uint256) {
     if (referral != address(0x0)) {
       uint256 refReward;
       address refOwer;
@@ -257,7 +257,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
 
     uint256 myReward = reward;
-    uint256 perReward = reward.div(tokenIds.length + (itemIds.length * 5));
+    uint256 perReward = reward.div(tokenIds.length + totalItem);
     // share saru
     for (uint256 inx = 0; inx < tokenIds.length; inx++) {
       (address owner, uint256 percent) = scholar.ownerInfo(kuniSaru, tokenIds[inx]);

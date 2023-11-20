@@ -4,7 +4,7 @@ const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret-bsc").toString().trim()
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  defaultNetwork: 'bsc',
+  // defaultNetwork: 'bsc',
   solidity: {
     version: "0.8.6",
     settings: {
