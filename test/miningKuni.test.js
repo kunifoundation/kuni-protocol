@@ -43,7 +43,7 @@ describe('------------- Staking token ------------------', () => {
     // tx = await this.mining.connect(owner).gasUsedDeclaration(e100, 0)
     // await tx.wait()
 
-    tx = await this.mining.connect(bob).gasUsedDeclaration(e50, 0)
+    tx = await this.mining.connect(bob).testGas()
     await tx.wait()
     // await expect(this.mining.connect(bob).gasUsedDeclaration(await this.ge.getAddress(), e100)).to.be.revertedWith('AMA: IS_NOT_MINTER')
     // tx = await this.mining.connect(owner).gasUsedDeclaration(e100, 0)
@@ -79,7 +79,6 @@ describe('------------- Staking token ------------------', () => {
     tx = await this.mining.connect(bob).claimKuni(await this.ge.getAddress(), e50)
     await tx.wait()
     log('kuni mining claim: ', (await this.mining.balanceOf(await bob.address))/p16)
-    log('ama:', await this.mining.kuniBlock(), await this.mining.distanceBock())
-
+    log('ama:', await this.mining.totalGasUsed())
   })
 })

@@ -21,7 +21,7 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
 
   address public kuniItem;
   IEcoGame private eco;
-  address public mining;
+  address public miningKuni;
 
   constructor(address _eco) {
     eco = IEcoGame(_eco);
@@ -36,7 +36,9 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
   }
 
   function _craft(address[] calldata addr, uint256[] calldata amounts, uint8 attack) internal {
-    uint256 gasStart = gasleft();
+    if (miningKuni != address(0x0)) {
+      IMiningKuni(miningKuni).gasStart();
+    }
     require(addr.length > 0, 'Amatsu: Unable to process request!');
     uint256[] memory pic = new uint256[](addr.length);
     uint256 total = 0;
@@ -67,8 +69,8 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
     uint256 tokenId = IERC721Mint(kuniItem).currentId(cat);
     currentCap[msg.sender] = cap + 1;
     emit Craft(msg.sender, tokenId);
-    if (mining != address(0x0)) {
-      IMiningKuni(mining).gasUsedDeclaration(gasStart, gasleft());
+    if (miningKuni != address(0x0)) {
+      IMiningKuni(miningKuni).gasEnd();
     }
   }
 
@@ -91,7 +93,7 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
   }
 
   function setMining(address mining_) external onlyOwner {
-    mining = mining_;
+    miningKuni = mining_;
   }
 
   function currentCapOf(address acc) view override external returns(uint256) {

@@ -171,11 +171,13 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   }
 
   function fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds) external override nonReentrant {
-    uint256 gasStart = gasleft();
+    if (miningKuni != address(0x0)) {
+      IMiningKuni(miningKuni).gasStart();
+    }
     require(itemIds.length <= tokenIds.length && tokenIds.length <= MAX_SARU, 'Amatsu: Unable to process request');
     _invalidSaru(tokenIds, msg.sender);
     _invalidKuniItem(itemIds, msg.sender);
-    _fighting(tokenIds, itemIds, gasStart);
+    _fighting(tokenIds, itemIds);
   }
 
   function claimGE() external override nonReentrant {
@@ -219,7 +221,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 		emit ClaimGE(sender, amount);
   }
 
-  function _fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds, uint256 gasStart) internal {
+  function _fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds) internal {
     difficulty = eco.getDifficulty(_materials);
     if (stages[msg.sender] == 0) {
       stages[msg.sender] = 1;
@@ -237,7 +239,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     emit Fighting(msg.sender, tokenIds, itemIds, myReward, niohPower, won);
     updateBattleBonus();
     if (miningKuni != address(0x0)) {
-      IMiningKuni(miningKuni).gasUsedDeclaration(gasStart, gasleft());
+      IMiningKuni(miningKuni).gasEnd();
     }
   }
 
