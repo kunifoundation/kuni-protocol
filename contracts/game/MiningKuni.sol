@@ -66,21 +66,20 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     }
 
     function _mintKuni() private {
+        if (mintAtBlock >= block.number) return;
         if (totalGasUsed == 0) {
             mintAtBlock = block.number;
             return;
         }
 
-        uint256 toBlock = block.number;
-        if (block.number - mintAtBlock > BLOCK_LIMIT) {
-            toBlock = mintAtBlock + BLOCK_LIMIT;
+        uint256 blocks = block.number - mintAtBlock;
+        if (blocks > BLOCK_LIMIT) {
+            blocks = BLOCK_LIMIT;
         }
 
-        if (mintAtBlock < toBlock) {
-            uint256 reward = getRewardForMiner(mintAtBlock, toBlock, totalGasUsed);
-            _mint(address(this), reward);
-            mintAtBlock = block.number;
-        }
+        uint256 amount = blocks.mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(1000000)).div(NUM_OF_BLOCK_PER_DAY);
+        _mint(address(this), amount);
+        mintAtBlock = block.number;
     }
 
     function _updatePool(address _ge) private {
