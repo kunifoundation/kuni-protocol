@@ -382,18 +382,24 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     return _battleBonus[player];
   }
 
-  function mUpdatePool(address mToken) internal {
+  function _mint(address mToken) internal {
+    PoolInfo storage pool = pools[mToken];
+    if (block.number > pool.mintAtBlock) {
+      uint256 amount = IMaterial(mToken).getRewardForMiner(pool.mintAtBlock, block.number);
+      if (amount > 0) {
+        IMaterial(mToken).mint(address(this), amount);
+        pool.mintAtBlock = block.number;
+      }
+    }
+  }
+
+  function _mUpdatePool(address mToken) internal {
     PoolInfo storage pool = pools[mToken];
     if (pool.supply == 0) {
         pool.lastRewardBlock = block.number;
         return;
     }
     uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
-    if (rewardForMiner > 0) {
-      IMaterial(mToken).mint(address(this), rewardForMiner);
-      pool.mintAtBlock = block.number;
-    }
-
     pool.rewardPerShare = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
     pool.lastRewardBlock = block.number;
   }
@@ -426,8 +432,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     if (pool.mintAtBlock == 0) pool.mintAtBlock = block.number;
     if (_amount > 0) {
       UserInfo storage user = userInfo[mToken][sender];
-      // mint(mToken);
-      mUpdatePool(mToken);
+      _mint(mToken);
+      _mUpdatePool(mToken);
       _harvest(mToken, user);
       user.amount = user.amount.add(_amount);
       user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
@@ -440,8 +446,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     UserInfo storage user = userInfo[mToken][sender];
     PoolInfo storage pool = pools[mToken];
     if (_amount > 0 && _amount <= user.amount) {
-      // mint(mToken);
-      mUpdatePool(mToken);
+      _mint(mToken);
+      _mUpdatePool(mToken);
       _harvest(mToken, user);
       uint256 mAmount = user.pendingReward;
       if (_amount < user.amount) {
@@ -460,8 +466,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     PoolInfo storage pool = pools[mToken];
     uint256 _amount = user.amount;
     if (_amount > 0) {
-      // mint(mToken);
-      mUpdatePool(mToken);
+      _mint(mToken);
+      _mUpdatePool(mToken);
       _harvest(mToken, user);
       user.amount = 0;
       user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
@@ -474,8 +480,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   function mClaim(address mToken, address sender) internal {
     UserInfo storage user = userInfo[mToken][sender];
     if (user.amount > 0) {
-      // mint(mToken);
-      mUpdatePool(mToken);
+      _mint(mToken);
+      _mUpdatePool(mToken);
       _harvest(mToken, user);
       uint256 _amount = user.pendingReward;
       _transferToken(mToken, _amount);

@@ -14,6 +14,7 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
 	using EnumerableSet for EnumerableSet.UintSet;
 
   uint256 public constant PERCENT = 10000;
+  
   struct ScholarInfo {
     address owner;
     uint256 rate;
@@ -75,7 +76,7 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
     delete rateOf[nftAddr][tokenId];
   }
 
-  function ownerInfo(address nftAddr, uint256 tokenId) override external  view returns(address, uint256) {
+  function ownerInfo(address nftAddr, uint256 tokenId) override external view returns(address, uint256) {
     ScholarInfo memory info = rateOf[nftAddr][tokenId];
     return (info.owner, info.rate);
   }
