@@ -123,7 +123,7 @@ describe('------------- Staking token ------------------', () => {
 
     await (await this.game.setGE(this.geAddr)).wait()
     await (await this.game.setMining(await this.mining.getAddress())).wait()
-    await (await this.game.setFounder(founder.address)).wait()
+    await (await this.game.setFoundation(founder.address)).wait()
 
 
     expect(await this.game.materialAt(0)).to.be.eq(ZeroAddress)

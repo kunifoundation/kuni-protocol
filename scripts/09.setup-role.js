@@ -34,7 +34,7 @@ async function coreGame() {
   // await (await this.game.setGE(TOKENS.ge)).wait()
   // log('GE DONE')
   // await (await this.game.setMining(TOKENS.kuni)).wait()
-  // await (await this.game.setFounder(wFourder)).wait()
+  // await (await this.game.setFoundation(wFourder)).wait()
   // await (await this.game.setMaterials([TOKENS.ore, TOKENS.stone, TOKENS.cotton, TOKENS.lumber])).wait()
 
   // log('======== setup minter =========== ')

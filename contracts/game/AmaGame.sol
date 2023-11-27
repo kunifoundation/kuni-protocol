@@ -43,7 +43,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
   address public kuniSaru;
   address public kuniItem;
-  address private founder;
+  address private foundation;
   IEcoGame public eco;  
   IScholarship public scholar;
   address public miningKuni;
@@ -178,19 +178,22 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     _invalidSaru(tokenIds, msg.sender);
     _invalidKuniItem(itemIds, msg.sender);
     _fighting(tokenIds, itemIds);
+    if (miningKuni != address(0x0)) {
+      IMiningKuni(miningKuni).gasEnd();
+    }
   }
 
   function claimGE() external override nonReentrant {
     _claimGE(msg.sender);
-    if (founder != address(0x0)) {
-      _claimGE(founder);
+    if (foundation != address(0x0)) {
+      _claimGE(foundation);
     }
 	}
 
   function earnKuni() external nonReentrant {
     _earnKuni(msg.sender);
-    if (founder != address(0x0)) {
-      _earnKuni(founder);
+    if (foundation != address(0x0)) {
+      _earnKuni(foundation);
     }
   }
 
@@ -238,9 +241,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     unclaimedGE[msg.sender] += myReward;
     emit Fighting(msg.sender, tokenIds, itemIds, myReward, niohPower, won);
     updateBattleBonus();
-    if (miningKuni != address(0x0)) {
-      IMiningKuni(miningKuni).gasEnd();
-    }
   }
 
   function updateBattleBonus() internal {
@@ -559,8 +559,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     ge = ge_;
   }
 
-  function setFounder(address addr) external onlyOwner {
-    founder = addr;
+  function setFoundation(address addr) external onlyOwner {
+    foundation = addr;
   }
 
   function setItem(address addr) external onlyOwner {

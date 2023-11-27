@@ -10,10 +10,11 @@ import "../commons/AmaMinter.sol";
 
 contract Material is ERC20, Ownable, IMaterial {
   using SafeMath for uint256;
-  uint256 MAX_SUPPLY = 105000000 ether;
+  uint256 MAX_SUPPLY = 21000000 ether / 4;
   uint256 NUM_OF_BLOCK_PER_DAY = 28800;
   uint256 MAGIC_NUM = 1e12;
-  uint256 RATE = 25;
+  uint256 RATE = 500;
+  uint256 BASE_RATE = 1000000;
 
   address public minter;
 
@@ -38,7 +39,7 @@ contract Material is ERC20, Ownable, IMaterial {
 
   function getRewardForMiner(uint256 _from, uint256 _to) external override view returns(uint256) {
     if (_from >= _to) return 0; 
-    return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(1000000)).div(NUM_OF_BLOCK_PER_DAY);
+    return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
   }
 
   function _burn(address account, uint256 amount) internal override {
