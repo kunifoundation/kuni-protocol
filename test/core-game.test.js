@@ -145,8 +145,41 @@ describe('------------- Staking token ------------------', () => {
     await initCraftData(this.meta)
 
     
-    // 1 - 10
-    await initSaruData(this.meta, 0, 10)
+    // 1 - 100
+    const balance = await deployer.provider.getBalance(await deployer.getAddress())
+    const self = this
+    async function initSaru(start) {
+      let end = start + 150
+      await initSaruData(self.meta, end - 150, end)
+      end = start + 150
+      await initSaruData(self.meta, end - 150, end)
+      end = start + 150
+      await initSaruData(self.meta, end - 150, end)
+      end = start + 150
+      await initSaruData(self.meta, end - 150, end)
+      end = start + 150
+      await initSaruData(self.meta, end - 150, end)
+      end = start + 150
+      await initSaruData(self.meta, end - 150, end)
+      return end;
+    }
+
+    let start = 0;
+
+    start = await initSaru(0)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    // start = await initSaru(start)
+    console.log("inx", start);
+
+    console.log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
     await cMintNft(this.saru, bob.address, 5)
     await cMintNft(this.saru, alex.address, 5)
     await (await this.referal.connect(deployer).createCodeTo(founder.address, 'AMAKUNI', 1000)).wait()
@@ -274,10 +307,10 @@ describe('------------- Staking token ------------------', () => {
     await (await this.game.connect(bob).deposit(parseEther('10'), [])).wait()
     log('kuni', (await this.mining.balanceOf(bob.address))/p16)
     await mine(100000);
-    log('ore bob peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), bob.address))/p16)
+    log('ore bob pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), bob.address))/p16)
     // await (await this.game.connect(bob).withdraw()).wait()
     log('kuni', (await this.mining.balanceOf(bob.address))/p16)
-    log('ore after peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), bob.address))/p16)
+    log('ore after pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), bob.address))/p16)
 
     await (await this.game.connect(alex).fighting([7], [])).wait()
     await (await this.game.connect(alex).earnKuni()).wait()
@@ -287,8 +320,8 @@ describe('------------- Staking token ------------------', () => {
     await approveToken(this.mining, alex, this.gameAddr)
     await (await this.game.connect(alex).deposit(await this.mining.balanceOf(alex.address), [])).wait()
     await mine(2)
-    log('ore bob after peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), bob.address))/p16)
-    log('ore alex after peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), alex.address))/p16)
+    log('ore bob after pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), bob.address))/p16)
+    log('ore alex after pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), alex.address))/p16)
     log('block 2: ', await ethers.provider.getBlockNumber())
     // await (await this.game.connect(bob).earnKuni()).wait()
     // await sleep(500)

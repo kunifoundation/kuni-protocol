@@ -73,7 +73,7 @@ describe('------------- Staking token ------------------', () => {
     
     await mineKuni(bob, self.ge)
     await mine(20)
-    log('pedding', (await this.mining.peddingReward(await this.ge.getAddress(), bob.address))/p16)
+    log('pending', (await this.mining.pendingReward(await this.ge.getAddress(), bob.address))/p16)
     // await mineKuni(alex, self.ge2)
     log(await ethers.provider.getBlockNumber())
     tx = await this.mining.connect(bob).claimKuni(await this.ge.getAddress(), e50)

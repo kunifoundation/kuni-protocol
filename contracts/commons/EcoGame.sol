@@ -46,13 +46,13 @@ contract EcoGame is IEcoGame, Ownable, IData {
     return (eff.ore, eff.stone, eff.cotton, eff.lumber);
   }
 
-  function niohPower(uint256 stage, uint256 difficulty) external override pure returns(uint256) {
-    return _niohPower(stage, difficulty);
+  function niohPower(uint256 stage) external override pure returns(uint256) {
+    return _niohPower(stage);
   }
 
-  function _niohPower(uint256 stage, uint256 difficulty) internal pure returns(uint256) {
+  function _niohPower(uint256 stage) internal pure returns(uint256) {
     require(stage > 0, 'Stage less zero.');
-    return (((stage * (1e12 + difficulty))**2)/1e12**2).mul(1 ether);
+    return (stage ** 2).mul(1 ether);
   }
 
   function advantagePoint(uint256[] calldata tokenIds, address kuniItem, uint256[][] calldata items, uint256 stage, uint256 bonus, uint256 power) external override view returns(bool won, uint256 totalItem) {
@@ -259,19 +259,6 @@ contract EcoGame is IEcoGame, Ownable, IData {
       }
     }
     return (attack, defend, total);
-  }
-
-  function getDifficulty(address[] calldata materials) override external view returns(uint256) {
-    uint256 burn; uint256 supply;
-    for (uint256 index = 0; index < materials.length; index++) {
-      burn = burn.add(IERC20Burnable(materials[index]).burnSupply());
-      supply = supply.add(IERC20(materials[index]).totalSupply());
-    }
-    if (supply > 0) {
-      return burn.mul(1e12).div(supply);
-    }
-
-    return 0;
   }
 
   function rewardPoint(uint256 stage, bool won, uint256 saru, uint256 item) external override pure returns(uint256) {

@@ -13,12 +13,11 @@ contract Material is ERC20, Ownable, IMaterial {
   uint256 MAX_SUPPLY = 21000000 ether / 4;
   uint256 NUM_OF_BLOCK_PER_DAY = 28800;
   uint256 MAGIC_NUM = 1e12;
-  uint256 RATE = 500;
-  uint256 BASE_RATE = 1000000;
+  uint256 RATE = 5;
+  uint256 BASE_RATE = 10000;
 
   address public minter;
 
-  mapping(address => uint256) private _burnOf;
   uint256 private _burnSupply;
 
   constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {
@@ -43,16 +42,12 @@ contract Material is ERC20, Ownable, IMaterial {
   }
 
   function _burn(address account, uint256 amount) internal override {
-    _burnOf[account] += amount;
     _burnSupply += amount;
     super._burn(account, amount);
   }
 
   function burnSupply() external override view returns(uint256) {
     return _burnSupply;
-  }
-  function burnOf(address acc) external override view returns(uint256) {
-    return _burnOf[acc];
   }
 
   function circulatingSupply() external override view returns(uint256) {

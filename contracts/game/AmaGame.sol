@@ -27,7 +27,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
   uint256 MAGIC_NUM = 1e12;
   uint256 private MAX_SARU = 6;
-  uint256 public difficulty = 5e10; 
 
   // owner => tokenIds
 	mapping(address => EnumerableSet.UintSet) private _nftSaru;
@@ -225,13 +224,12 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   }
 
   function _fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds) internal {
-    difficulty = eco.getDifficulty(_materials);
     if (stages[msg.sender] == 0) {
       stages[msg.sender] = 1;
     }
 
     uint256 reward = 0;
-    uint256 niohPower = eco.niohPower(stages[msg.sender], difficulty);
+    uint256 niohPower = eco.niohPower(stages[msg.sender]);
     (bool won, uint256 totalItem) = eco.advantagePoint(tokenIds, kuniItem, itemIds, stages[msg.sender], _battleBonus[msg.sender], niohPower);
     reward = eco.rewardPoint(stages[msg.sender], won, tokenIds.length, totalItem);
     if (won) {
@@ -382,17 +380,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     return _battleBonus[player];
   }
 
-  function _mint(address mToken) internal {
-    PoolInfo storage pool = pools[mToken];
-    if (block.number > pool.mintAtBlock) {
-      uint256 amount = IMaterial(mToken).getRewardForMiner(pool.mintAtBlock, block.number);
-      if (amount > 0) {
-        IMaterial(mToken).mint(address(this), amount);
-        pool.mintAtBlock = block.number;
-      }
-    }
-  }
-
   function _mUpdatePool(address mToken) internal {
     PoolInfo storage pool = pools[mToken];
     if (pool.supply == 0) {
@@ -400,6 +387,10 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         return;
     }
     uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
+    if (rewardForMiner > 0) {
+      IMaterial(mToken).mint(address(this), rewardForMiner);
+    }
+
     pool.rewardPerShare = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
     pool.lastRewardBlock = block.number;
   }
@@ -429,10 +420,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   function mDeposit(address mToken, address sender, uint256 _amount, uint256 multiplier) internal {
     _amount = _amount.mul(multiplier).div(MAGIC_NUM);
     PoolInfo storage pool = pools[mToken];
-    if (pool.mintAtBlock == 0) pool.mintAtBlock = block.number;
     if (_amount > 0) {
       UserInfo storage user = userInfo[mToken][sender];
-      _mint(mToken);
       _mUpdatePool(mToken);
       _harvest(mToken, user);
       user.amount = user.amount.add(_amount);
@@ -446,7 +435,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     UserInfo storage user = userInfo[mToken][sender];
     PoolInfo storage pool = pools[mToken];
     if (_amount > 0 && _amount <= user.amount) {
-      _mint(mToken);
       _mUpdatePool(mToken);
       _harvest(mToken, user);
       uint256 mAmount = user.pendingReward;
@@ -466,7 +454,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     PoolInfo storage pool = pools[mToken];
     uint256 _amount = user.amount;
     if (_amount > 0) {
-      _mint(mToken);
       _mUpdatePool(mToken);
       _harvest(mToken, user);
       user.amount = 0;
@@ -480,7 +467,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   function mClaim(address mToken, address sender) internal {
     UserInfo storage user = userInfo[mToken][sender];
     if (user.amount > 0) {
-      _mint(mToken);
       _mUpdatePool(mToken);
       _harvest(mToken, user);
       uint256 _amount = user.pendingReward;
@@ -489,7 +475,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
   }
 
-  function peddingReward(address mToken, address sender) external view returns(uint256) {
+  function pendingReward(address mToken, address sender) external view returns(uint256) {
     PoolInfo storage pool = pools[mToken];
     UserInfo storage user = userInfo[mToken][sender];
     if (user.amount > 0) {
