@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../interfaces/IMaterial.sol";
-import "../commons/AmaMinter.sol";
 
 contract Material is ERC20, Ownable, IMaterial {
   using SafeMath for uint256;
@@ -44,10 +43,6 @@ contract Material is ERC20, Ownable, IMaterial {
   function _burn(address account, uint256 amount) internal override {
     _burnSupply += amount;
     super._burn(account, amount);
-  }
-
-  function burnSupply() external override view returns(uint256) {
-    return _burnSupply;
   }
 
   function circulatingSupply() external override view returns(uint256) {

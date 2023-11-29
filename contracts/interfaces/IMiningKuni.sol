@@ -5,7 +5,6 @@ pragma solidity ^0.8.6;
 interface IMiningKuni {
   function gasStart() external;
   function gasEnd() external;
-  // function gasUsedDeclaration(uint256 gasStart, uint256 gasEnd) external;
   function mineKuni(address _ge, uint256 _amount) external;
   function mineKuniFrom(address sender, address _ge, uint256 _amount) external;
   function claimKuni(address _ge, uint256 _amount) external;

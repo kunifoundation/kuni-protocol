@@ -8,8 +8,7 @@ import "../interfaces/IERC20Burnable.sol";
 import "../interfaces/IERC20Mint.sol";
 
 contract GreenEnergy is ERC20("GreenEnergy", "GE"), Ownable, IERC20Burnable, IERC20Mint {
-  
-  uint256 private _burnSupply;
+
   address private _minter;
 
   function mint(address to, uint256 amount) external override onlyMinter {
@@ -20,18 +19,9 @@ contract GreenEnergy is ERC20("GreenEnergy", "GE"), Ownable, IERC20Burnable, IER
     _burn(msg.sender, amount);
   }
 
-  function _burn(address account, uint256 amount) internal override {
-    _burnSupply += amount;
-    super._burn(account, amount);
-  }
-
   function burnFrom(address account, uint256 amount) external override virtual {
     _spendAllowance(account, msg.sender, amount);
     _burn(account, amount);
-  }
-
-  function burnSupply() external override view returns(uint256) {
-    return _burnSupply;
   }
 
   function circulatingSupply() external override view returns (uint256) {

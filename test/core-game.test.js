@@ -85,7 +85,7 @@ describe('------------- Staking token ------------------', () => {
     this.scholar = await (await deployContract('Scholarship')).waitForDeployment()
     this.referal = await (await deployContract('Referral')).waitForDeployment()
     this.item    = await (await deployContract('KuniItem')).waitForDeployment()
-    this.fMaterial = await (await ethers.deployContract('MaterialFactory')).waitForDeployment();
+    // this.fMaterial = await (await ethers.deployContract('MaterialFactory')).waitForDeployment();
 
     this.ore    = await (await ethers.deployContract('Material', ['Ore', 'ORE'])).waitForDeployment();
     this.stone  = await (await ethers.deployContract('Material', ['Stone', 'STONE'])).waitForDeployment();
