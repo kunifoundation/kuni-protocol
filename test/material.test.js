@@ -17,35 +17,16 @@ describe('------------- Staking token ------------------', () => {
     // account init
     [owner, bob, alex, axi, ...addrs] = await ethers.getSigners();
     this.ow = owner
-    this.factory = await deployContract('MaterialFactory'); await this.factory.waitForDeployment()
-    // this.materials = await this.factory.materials()
+    this.ore    = await (await ethers.deployContract('Material', ['Ore', 'ORE'])).waitForDeployment();
+    this.stone  = await (await ethers.deployContract('Material', ['Stone', 'STONE'])).waitForDeployment();
+    this.cotton = await (await ethers.deployContract('Material', ['Cotton', 'COTTON'])).waitForDeployment();
+    this.lumber = await (await ethers.deployContract('Material', ['Lumber', 'LUMBER'])).waitForDeployment();
   })
 
-  it("00. Create Material", async function() {
-    const self = this
-    let tx, rep;
-    async function create(name, symbol, _owner, minter) {
-      const tx = await self.factory.createMaterial(_owner || owner.address, name, symbol)
-      const receipt = await tx.wait()
-      if (receipt.logs) {
-        const rs = receipt.logs.find(({ fragment }) => fragment.name === 'MaterialCreated')
-        if (rs) {
-          console.log(rs.args[0]);
-        }
-      }
-    }
-
-    await (await this.factory.createMaterial(owner.address, owner.address, "Ore", "ORE")).wait()
-    await (await this.factory.createMaterial(owner.address, owner.address, "Stone", "STONE")).wait()
-    await (await this.factory.createMaterial(owner.address, owner.address, "Cotton", "COTTON")).wait()
-    await (await this.factory.createMaterial(owner.address, owner.address, "Lumber", "LUMBER")).wait()
-
-    // console.log(rep.logs);
-    // const materials = await this.factory.materials()
-    // const oreAddr = materials[0]
-    // tx = await this.factory.mint(oreAddr)
-    // rep = await tx.wait()
-    // tx = await this.factory.transfer(oreAddr, bob.address, parseEther('0.5'))
-    // rep = await tx.wait()
+  it("00. Check name Material", async function() {
+    expect(await this.ore.name()).equal("Ore")
+    expect(await this.stone.name()).equal("Stone")
+    expect(await this.cotton.name()).equal("Cotton")
+    expect(await this.lumber.name()).equal("Lumber")
   })
 })

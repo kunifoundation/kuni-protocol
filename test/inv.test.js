@@ -84,8 +84,7 @@ describe('------------- Staking token ------------------', () => {
     this.saru    = await (await deployContract('KuniSaru')).waitForDeployment();
     this.scholar = await (await deployContract('Scholarship')).waitForDeployment()
     this.referal = await (await deployContract('Referral')).waitForDeployment()
-    this.item    = await (await deployContract('KuniItem', [deployer.address])).waitForDeployment()
-    this.fMaterial = await (await ethers.deployContract('MaterialFactory')).waitForDeployment();
+    this.item    = await (await deployContract('KuniItem')).waitForDeployment()
 
     this.ore    = await (await ethers.deployContract('Material', ['Ore', 'ORE'])).waitForDeployment();
     this.stone  = await (await ethers.deployContract('Material', ['Stone', 'STONE'])).waitForDeployment();
@@ -112,7 +111,7 @@ describe('------------- Staking token ------------------', () => {
     }
 
     this.mTokenArr = _.values(this.mTokens)
-    console.log(this.mTokenArr);
+    // console.log(this.mTokenArr);
 
     await (await this.ore.setMinter(this.gameAddr)).wait()
     await (await this.stone.setMinter(this.gameAddr)).wait()
@@ -274,10 +273,10 @@ describe('------------- Staking token ------------------', () => {
     await (await this.game.connect(bob).deposit(parseEther('10'), [])).wait()
     log('kuni', (await this.mining.balanceOf(bob.address))/p16)
     await mine(100000);
-    log('ore bob peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), bob.address))/p16)
+    log('ore bob pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), bob.address))/p16)
     // await (await this.game.connect(bob).withdraw()).wait()
     log('kuni', (await this.mining.balanceOf(bob.address))/p16)
-    log('ore after peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), bob.address))/p16)
+    log('ore after pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), bob.address))/p16)
 
     await (await this.game.connect(alex).fighting([7], [])).wait()
     await (await this.game.connect(alex).earnKuni()).wait()
@@ -287,8 +286,8 @@ describe('------------- Staking token ------------------', () => {
     await approveToken(this.mining, alex, this.gameAddr)
     await (await this.game.connect(alex).deposit(await this.mining.balanceOf(alex.address), [])).wait()
     await mine(2)
-    log('ore bob after peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), bob.address))/p16)
-    log('ore alex after peddingReward: ', (await this.game.peddingReward(await this.ore.getAddress(), alex.address))/p16)
+    log('ore bob after pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), bob.address))/p16)
+    log('ore alex after pendingReward: ', (await this.game.pendingReward(await this.ore.getAddress(), alex.address))/p16)
     log('block 2: ', await ethers.provider.getBlockNumber())
     // await (await this.game.connect(bob).earnKuni()).wait()
     // await sleep(500)
