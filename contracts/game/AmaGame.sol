@@ -29,9 +29,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   uint256 private MAX_SARU = 6;
   // owner => tokenIds
   mapping(address => EnumerableSet.UintSet) private _nftSaru;
-	// tokenId => owner
-	mapping (uint256 => address) private _nftOwner;
-	mapping(address => uint256) public kuniStakedOf;
+  // tokenId => owner
+  mapping (uint256 => address) private _nftOwner;
+  mapping(address => uint256) public kuniStakedOf;
 
   address[] private _materials = new address[](4);
   // material token => user addr => info
@@ -67,8 +67,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
       // call 
       eff = _calProductivityTeam(kuniAmount, _nftSaru[msg.sender].values());
       for (uint256 index = 0; index < eff.length; index++) {
-				mValues[index] = mValues[index].add(eff[index]);
-			}
+	mValues[index] = mValues[index].add(eff[index]);
+      }
       // kuni staked
       IERC20(miningKuni).transferFrom(msg.sender, address(this), kuniAmount);
       kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].add(kuniAmount);
@@ -167,7 +167,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
       _transferToken(miningKuni, kuniStakedOf[msg.sender]);
       kuniStakedOf[msg.sender] = 0;
     }
-    
   }
 
   function fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds) external override nonReentrant onlyStart {
