@@ -18,11 +18,11 @@ import "../interfaces/IReferral.sol";
 import "../interfaces/IScholarship.sol";
 
 contract AmaGame is
-    IAmaGame,
-    Ownable,
-    Pausable,
-    IERC721Receiver,
-    ReentrancyGuard
+  IAmaGame,
+  Ownable,
+  Pausable,
+  IERC721Receiver,
+  ReentrancyGuard
 {
     using SafeMath for uint256;
     using SafeMath for uint256;
@@ -280,11 +280,11 @@ contract AmaGame is
       uint256 perReward = reward.div(tokenIds.length + totalItem);
       // share saru
       for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-          (address owner, uint256 percent) = scholar.ownerInfo(kuniSaru, tokenIds[inx]);
-          if (owner == msg.sender || owner == address(0x0)) continue;
-          uint256 refReward = perReward.mul(percent).div(10000);
-          unclaimedGE[owner] = unclaimedGE[owner].add(refReward);
-          myReward = myReward.sub(refReward);
+        (address owner, uint256 percent) = scholar.ownerInfo(kuniSaru, tokenIds[inx]);
+        if (owner == msg.sender || owner == address(0x0)) continue;
+        uint256 refReward = perReward.mul(percent).div(10000);
+        unclaimedGE[owner] = unclaimedGE[owner].add(refReward);
+        myReward = myReward.sub(refReward);
       }
 
       // share items
@@ -374,11 +374,7 @@ contract AmaGame is
       return _nftSaru[account].length();
     }
 
-    function saruStakeOf(
-      address sender,
-      uint256 start,
-      uint256 limit
-    ) external view virtual returns (uint256[] memory, address[] memory) {
+    function saruStakeOf(address sender, uint256 start, uint256 limit) external view virtual returns (uint256[] memory, address[] memory) {
       uint256 total = _nftSaru[sender].length();
       uint256 size = limit;
       if (start + limit > total) size = total - start;
@@ -395,9 +391,7 @@ contract AmaGame is
       return stages[player] == 0 ? 1 : stages[player];
     }
 
-    function battleBonusOf(
-      address player
-    ) external view override returns (uint256) {
+    function battleBonusOf(address player) external view override returns (uint256) {
       return _battleBonus[player];
     }
 
