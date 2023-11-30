@@ -251,12 +251,7 @@ contract AmaGame is
         _battleBonus[msg.sender],
         niohPower
       );
-      reward = eco.rewardPoint(
-        stages[msg.sender],
-        won,
-        tokenIds.length,
-        totalItem
-      );
+      reward = eco.rewardPoint(stages[msg.sender], won, tokenIds.length, totalItem);
       if (won) {
         stages[msg.sender] = stages[msg.sender] + 1;
       }
@@ -297,10 +292,7 @@ contract AmaGame is
         for (uint256 j = 0; j < itemIds[i].length; j++) {
           uint256 tokenId = itemIds[i][j];
           if (tokenId == 0x0) continue;
-          (address owner, uint256 percent) = scholar.ownerInfo(
-              kuniItem,
-              tokenId
-          );
+          (address owner, uint256 percent) = scholar.ownerInfo(kuniItem, tokenId);
           if (owner == msg.sender || owner == address(0x0)) continue;
           uint256 refReward = perReward.mul(percent).div(10000);
           unclaimedGE[owner] = unclaimedGE[owner].add(refReward);
@@ -415,10 +407,7 @@ contract AmaGame is
         pool.lastRewardBlock = block.number;
         return;
       }
-      uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(
-        pool.lastRewardBlock,
-        block.number
-      );
+      uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
       if (rewardForMiner > 0) {
         IMaterial(mToken).mint(address(this), rewardForMiner);
       }
@@ -444,12 +433,7 @@ contract AmaGame is
       }
     }
 
-    function _mDeposit(
-      address mToken,
-      address sender,
-      uint256 _amount,
-      uint256 multiplier
-    ) internal {
+    function _mDeposit(address mToken, address sender, uint256 _amount, uint256 multiplier) internal {
       _amount = _amount.mul(multiplier).div(MAGIC_NUM);
       PoolInfo storage pool = pools[mToken];
       if (_amount > 0) {
@@ -462,12 +446,7 @@ contract AmaGame is
       }
     }
 
-    function _mWithdraw(
-      address mToken,
-      address sender,
-      uint256 _amount,
-      uint256 multiplier
-    ) internal {
+    function _mWithdraw(address mToken, address sender, uint256 _amount, uint256 multiplier) internal {
       _amount = _amount.mul(multiplier).div(MAGIC_NUM);
       UserInfo storage user = userInfo[mToken][sender];
       PoolInfo storage pool = pools[mToken];
@@ -529,10 +508,7 @@ contract AmaGame is
       return 0;
     }
 
-    function geStakedOf(
-      address mToken,
-      address sender
-    ) external view returns (uint256) {
+    function geStakedOf(address mToken, address sender) external view returns (uint256) {
       return userInfo[mToken][sender].amount;
     }
 
