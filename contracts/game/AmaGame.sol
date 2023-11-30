@@ -20,16 +20,15 @@ import "../interfaces/IScholarship.sol";
 contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeMath for uint256;
-	using EnumerableSet for EnumerableSet.UintSet;
+  using EnumerableSet for EnumerableSet.UintSet;
 
   mapping (address => uint256) private _battleBonus;
   mapping (address => uint256) private stages;
 
   uint256 MAGIC_NUM = 1e12;
   uint256 private MAX_SARU = 6;
-
   // owner => tokenIds
-	mapping(address => EnumerableSet.UintSet) private _nftSaru;
+  mapping(address => EnumerableSet.UintSet) private _nftSaru;
 	// tokenId => owner
 	mapping (uint256 => address) private _nftOwner;
 	mapping(address => uint256) public kuniStakedOf;
@@ -49,15 +48,15 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
   address public ge;
   address public referral;
   mapping (address => uint256) public unclaimedGE;
-  uint256 genesisBlock;
+  uint256 genesisTime;
 
-  constructor(address kuniSaru_, address kuniItem_, address eco_, address scholar_, address refer, uint256 _genesisBlock) {
+  constructor(address kuniSaru_, address kuniItem_, address eco_, address scholar_, address refer, uint256 _genesisTime) {
     kuniSaru = kuniSaru_;
     kuniItem = kuniItem_;
     eco      = IEcoGame(eco_);
     scholar  = IScholarship(scholar_);
     referral = refer;
-    genesisBlock =  _genesisBlock;
+    genesisTime = _genesisTime;
   }
 
   function deposit(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
@@ -82,7 +81,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
       }
 
       for (uint256 index = 0; index < tokenIds.length; index++) {
-        _transfer(msg.sender, address(this), tokenIds[index], true);
+        _transfer(msg.sender, address(this), tokenIds[index]);
       }
     }
     uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
@@ -133,7 +132,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
       mValues = _calProductivityTeam(kuniStakedOf[msg.sender], tokenIds);
 			for (uint256 inx = 0; inx < tokenIds.length; inx++) {
 				require(msg.sender == _nftOwner[tokenIds[inx]], 'KUNI: Your is not owner');
-				_transfer(address(this), msg.sender, tokenIds[inx], true);
+				_transfer(address(this), msg.sender, tokenIds[inx]);
 			}
 		}
 
@@ -161,7 +160,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     // widthraw saru staked
     for (uint256 inx = _nftSaru[msg.sender].length(); inx > 0; inx--) {
-      _transfer(address(this), msg.sender, _nftSaru[msg.sender].at(inx - 1), true);
+      _transfer(address(this), msg.sender, _nftSaru[msg.sender].at(inx - 1));
     }
 
     if (kuniStakedOf[msg.sender] > 0) {
@@ -509,11 +508,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 		}
 	}
 
-	function _transfer(address _from, address _to, uint256 _tokenId, bool isTransfer) internal {
-		if (isTransfer) {
-			IERC721(kuniSaru).safeTransferFrom(_from, _to, _tokenId);
-		}
-
+	function _transfer(address _from, address _to, uint256 _tokenId) internal {
+    IERC721(kuniSaru).safeTransferFrom(_from, _to, _tokenId);
 		if (_to == address(this)) {
 			// add
 			_addToken(_from, _tokenId);
@@ -567,8 +563,12 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
   }
 
+  function setGenesisTime(uint256 _start) external onlyOwner {
+    genesisTime = _start;
+  }
+
   modifier onlyStart() {
-    require(genesisBlock < block.number, "KUNI: Not open!");
+    require(genesisTime < block.timestamp, "KUNI: Not open!");
     _;
   }
 
@@ -578,6 +578,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     uint256,
     bytes memory
 	) public virtual override returns (bytes4) {
-			return this.onERC721Received.selector;
+    return this.onERC721Received.selector;
 	}
 }
