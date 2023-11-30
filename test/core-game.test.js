@@ -91,13 +91,14 @@ describe('------------- Staking token ------------------', () => {
     this.stone  = await (await ethers.deployContract('Material', ['Stone', 'STONE'])).waitForDeployment();
     this.cotton = await (await ethers.deployContract('Material', ['Cotton', 'COTTON'])).waitForDeployment();
     this.lumber = await (await ethers.deployContract('Material', ['Lumber', 'LUMBER'])).waitForDeployment();
-
+    
     this.game     = await (await deployContract('AmaGame', [
       await this.saru.getAddress(), 
       await this.item.getAddress(), 
       await this.eco.getAddress(),
       await this.scholar.getAddress(),
-      await this.referal.getAddress()
+      await this.referal.getAddress(),
+      25
     ])).waitForDeployment();
 
     this.ge      = await (await ethers.deployContract('GreenEnergy')).waitForDeployment();
@@ -112,7 +113,6 @@ describe('------------- Staking token ------------------', () => {
     }
 
     this.mTokenArr = _.values(this.mTokens)
-    console.log(this.mTokenArr);
 
     await (await this.ore.setMinter(this.gameAddr)).wait()
     await (await this.stone.setMinter(this.gameAddr)).wait()
@@ -177,6 +177,7 @@ describe('------------- Staking token ------------------', () => {
     // start = await initSaru(start)
     // start = await initSaru(start)
     // start = await initSaru(start)
+    log('ggggg 2: ', await ethers.provider.getBlockNumber())
     console.log("inx", start);
 
     console.log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
@@ -248,7 +249,7 @@ describe('------------- Staking token ------------------', () => {
   })
 
   it('05. fighting....', async function() {
-    await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith('Amatsu: Your not is owner')
+    await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith('KUNI: Your not is owner')
     tx = await this.game.connect(bob).fighting([1], [[0,0,0,0,0]])
     await tx.wait()
     tx = await this.game.connect(bob).fighting([1,2], [])

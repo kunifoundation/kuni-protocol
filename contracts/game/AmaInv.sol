@@ -39,7 +39,7 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
     if (miningKuni != address(0x0)) {
       IMiningKuni(miningKuni).gasStart();
     }
-    require(addr.length > 0, 'Amatsu: Unable to process request!');
+    require(addr.length > 0, 'KUNI: Unable to process request!');
     uint256[] memory pic = new uint256[](addr.length);
     uint256 total = 0;
     for (uint256 index = 0; index < addr.length; index++) {
@@ -48,11 +48,11 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
         total = total.add(amounts[index]);
         IERC20Burnable(addr[index]).burnFrom(msg.sender, amounts[index]);
       } else {
-        revert('Amatsu: Material not support or qty low!');
+        revert('KUNI: Material not support or qty low!');
       }
     }
     uint256 cap = _currentCapOf(msg.sender);
-    require(total > 0 && total <= cap.mul(1e18), 'Amatsu: Materials Limit reached. Please reduce the number of materials');
+    require(total > 0 && total <= cap.mul(1e18), 'KUNI: Materials Limit reached. Please reduce the number of materials');
     // slash; heavy; strike; tech; magic;
     uint256[] memory _stats = eco.materialStasBatch(pic, amounts);
     uint256[] memory stats = new uint256[](6); // = [slash, heavy, strike, tech, magic, type];
@@ -64,7 +64,7 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
     uint256 cat;
     (name, cat) = eco.toCraftNameCat(stats, attack);
     stats[5] = cat;
-    require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "Amatsu: NAME_EMPTY");
+    require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "KUNI: NAME_EMPTY");
     IERC721Mint(kuniItem).safeMint(msg.sender, name, stats);
     uint256 tokenId = IERC721Mint(kuniItem).currentId(cat);
     currentCap[msg.sender] = cap + 1;

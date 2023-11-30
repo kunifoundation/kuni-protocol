@@ -34,15 +34,15 @@ describe('------------- Staking token ------------------', () => {
     expect((await this.referral.refOwner(code)).rate).equal(rate)
 
     // 
-    await expect(this.referral.connect(bob).createCode(code, rate)).to.be.revertedWith("Amatsu: ALREADY_EXISTS");
+    await expect(this.referral.connect(bob).createCode(code, rate)).to.be.revertedWith("KUNI: ALREADY_EXISTS");
     
-    await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("Amatsu: Apply a code first!");
+    await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("KUNI: Apply a code first!");
     tx = await this.referral.connect(alex).applyCode('AMAKUNI')
     await tx.wait()
-    await expect(this.referral.connect(bob).createCode("", rate)).to.be.revertedWith("Amatsu: CODE_EMPTY");
-    await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("Amatsu: ALREADY_EXISTS");
-    await expect(this.referral.connect(bob).createCode(NEW_CODE, 5000 * 3)).to.be.revertedWith("Amatsu: MAX_RATE");
-    await expect(this.referral.connect(bob).createCode(NEW_CODE, 5000 * 3)).to.be.revertedWith("Amatsu: MAX_RATE");
+    await expect(this.referral.connect(bob).createCode("", rate)).to.be.revertedWith("KUNI: CODE_EMPTY");
+    await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("KUNI: ALREADY_EXISTS");
+    await expect(this.referral.connect(bob).createCode(NEW_CODE, 5000 * 3)).to.be.revertedWith("KUNI: MAX_RATE");
+    await expect(this.referral.connect(bob).createCode(NEW_CODE, 5000 * 3)).to.be.revertedWith("KUNI: MAX_RATE");
     tx = await this.referral.connect(bob).createCode(NEW_CODE, 5000)
     await tx.wait()
     expect((await this.referral.refOwner("NEW_CODE")).rate).equal(parseUnits('5000', 0))
@@ -52,17 +52,17 @@ describe('------------- Staking token ------------------', () => {
     const code = "AMA"
     const newCode = "NEW_CODE"
     const rate = parseUnits("40", 2)
-    await expect(this.referral.connect(bob).createCode(code, rate)).to.be.revertedWith("Amatsu: ALREADY_EXISTS");
+    await expect(this.referral.connect(bob).createCode(code, rate)).to.be.revertedWith("KUNI: ALREADY_EXISTS");
     // tx = await this.referral.connect(bob).createCode(code, rate)
     // await tx.wait()
-    await expect(this.referral.connect(alex).applyCode(newCode)).to.be.revertedWith("Amatsu: NOT_ALLOWED");
+    await expect(this.referral.connect(alex).applyCode(newCode)).to.be.revertedWith("KUNI: NOT_ALLOWED");
     // tx = await this.referral.connect(alex).applyCode(code)
     // await tx.wait()
     // tx = await this.referral.connect(bob).createCode(newCode, parseUnits("80", 2))
     // await tx.wait()
-    await expect(this.referral.connect(bob).applyCode(code)).to.be.revertedWith("Amatsu: SELF_REF");
-    await expect(this.referral.connect(bob).applyCode("NOT")).to.be.revertedWith("Amatsu: REF_NOT_EXISTS");
-    await expect(this.referral.connect(alex).applyCode(newCode)).to.be.revertedWith("Amatsu: NOT_ALLOWED");
+    await expect(this.referral.connect(bob).applyCode(code)).to.be.revertedWith("KUNI: SELF_REF");
+    await expect(this.referral.connect(bob).applyCode("NOT")).to.be.revertedWith("KUNI: REF_NOT_EXISTS");
+    await expect(this.referral.connect(alex).applyCode(newCode)).to.be.revertedWith("KUNI: NOT_ALLOWED");
     tx = await this.referral.refPoint(alex.address, parseUnits("10", 2))
     expect(parseUnits("1250", 0)).equal(tx[0])
     expect(parseUnits("25", 1)).equal(tx[1])
@@ -83,7 +83,7 @@ describe('------------- Staking token ------------------', () => {
     tx = await this.referral.setExtra(10000)
     tx = await this.referral.setExtra(1000)
     tx = await this.referral.setExtra(0)
-    await expect(this.referral.setExtra(10001)).revertedWith("Amatsu: EXTRA_LARGE")
+    await expect(this.referral.setExtra(10001)).revertedWith("KUNI: EXTRA_LARGE")
   })
 
   

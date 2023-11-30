@@ -65,7 +65,7 @@ contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessC
 
     function updateName(uint256 tokenId, string memory name) external onlyRole(DEFAULT_ADMIN_ROLE) {
         Meta memory meta = _metadata[tokenId];
-        require(keccak256(abi.encodePacked(meta.name)) == keccak256(abi.encodePacked("")), "Amatsu: CODE_EMPTY");
+        require(keccak256(abi.encodePacked(meta.name)) == keccak256(abi.encodePacked("")), "KUNI: CODE_EMPTY");
         meta.name = name;
         _metadata[tokenId] = meta;
         emit UpdateName(tokenId, name);

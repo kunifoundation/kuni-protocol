@@ -101,7 +101,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     }
 
     function mineKuni(address _ge, uint256 _amount) external override _geSupport(_ge) nonReentrant {
-        require(_amount > 0, "Amatsu: ZERO_AMOUNT");
+        require(_amount > 0, "KUNI: ZERO_AMOUNT");
         _mineKuni(_ge, msg.sender, _amount, true);
     }
 
@@ -129,7 +129,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     function claimKuni(address _ge, uint256 _amount) external override _geSupport(_ge) nonReentrant {
         PoolInfo storage pool = poolInfo[_ge];
         UserInfo storage user = userInfo[_ge][msg.sender];
-        require(user.amount >= _amount, "Amatsu: INVALID_AMOUNT");
+        require(user.amount >= _amount, "KUNI: INVALID_AMOUNT");
         _updatePool(_ge);
         _harvest(_ge, msg.sender);
         IERC20Burnable(_ge).burn(_amount);

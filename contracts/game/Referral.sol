@@ -43,9 +43,9 @@ contract Referral is IReferral, Ownable  {
   }
 
   function _applyCode(string calldata code) internal {
-    require(refOwner[code].ref != address(0), "Amatsu: REF_NOT_EXISTS");
-    require(refOwner[code].ref != msg.sender, "Amatsu: SELF_REF");
-    require(_ref[msg.sender].ref == address(0), "Amatsu: NOT_ALLOWED");
+    require(refOwner[code].ref != address(0), "KUNI: REF_NOT_EXISTS");
+    require(refOwner[code].ref != msg.sender, "KUNI: SELF_REF");
+    require(_ref[msg.sender].ref == address(0), "KUNI: NOT_ALLOWED");
     _ref[msg.sender].ref = refOwner[code].ref;
     _ref[msg.sender].rate = refOwner[code].rate;
     userRefCode[msg.sender] = code;
@@ -53,7 +53,7 @@ contract Referral is IReferral, Ownable  {
   }
 
   function createCode(string calldata code, uint256 rate) external {
-    require(keccak256(abi.encodePacked(userRefCode[msg.sender])) != keccak256(abi.encodePacked("")), "Amatsu: Apply a code first!");
+    require(keccak256(abi.encodePacked(userRefCode[msg.sender])) != keccak256(abi.encodePacked("")), "KUNI: Apply a code first!");
     _createCode(msg.sender, code, rate);
     emit CodeCreated(msg.sender, code, rate);
   }
@@ -65,16 +65,16 @@ contract Referral is IReferral, Ownable  {
   }
 
   function _createCode(address to, string memory code, uint256 rate) internal {
-    require(rate <= PERCENT, "Amatsu: MAX_RATE");
-    require(keccak256(abi.encodePacked(code)) != keccak256(abi.encodePacked("")), "Amatsu: CODE_EMPTY");
-    require(refOwner[code].ref == address(0), "Amatsu: ALREADY_EXISTS");
+    require(rate <= PERCENT, "KUNI: MAX_RATE");
+    require(keccak256(abi.encodePacked(code)) != keccak256(abi.encodePacked("")), "KUNI: CODE_EMPTY");
+    require(refOwner[code].ref == address(0), "KUNI: ALREADY_EXISTS");
     refOwner[code].ref = to;
     refOwner[code].rate = rate;
     userOfCodes[to].push(code);
   }
 
   function setExtra(uint256 extral) external onlyOwner {
-    require(extral <= PERCENT, "Amatsu: EXTRA_LARGE");
+    require(extral <= PERCENT, "KUNI: EXTRA_LARGE");
     EXTRA = extral;
   }
 

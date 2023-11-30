@@ -96,7 +96,7 @@ describe('------------- Staking token ------------------', () => {
       await this.item.getAddress(), 
       await this.eco.getAddress(),
       await this.scholar.getAddress(),
-      await this.referal.getAddress()
+      await this.referal.getAddress(), 10
     ])).waitForDeployment();
 
     this.ge      = await (await ethers.deployContract('GreenEnergy')).waitForDeployment();
@@ -214,7 +214,7 @@ describe('------------- Staking token ------------------', () => {
   })
 
   it('05. fighting....', async function() {
-    await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith('Amatsu: Your not is owner')
+    await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith('KUNI: Your not is owner')
     tx = await this.game.connect(bob).fighting([1], [[0,0,0,0,0]])
     await tx.wait()
     tx = await this.game.connect(bob).fighting([1,2], [])

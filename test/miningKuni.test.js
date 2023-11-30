@@ -45,7 +45,7 @@ describe('------------- Staking token ------------------', () => {
 
     tx = await this.mining.connect(bob).testGas()
     await tx.wait()
-    // await expect(this.mining.connect(bob).gasUsedDeclaration(await this.ge.getAddress(), e100)).to.be.revertedWith('AMA: IS_NOT_MINTER')
+    // await expect(this.mining.connect(bob).gasUsedDeclaration(await this.ge.getAddress(), e100)).to.be.revertedWith('KUNI: IS_NOT_MINTER')
     // tx = await this.mining.connect(owner).gasUsedDeclaration(e100, 0)
     // await tx.wait()
   })
