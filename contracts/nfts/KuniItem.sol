@@ -9,19 +9,18 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "../interfaces/IERC721Mint.sol";
 
 contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessControl, IERC721Mint {
-
     struct Meta {
         string name;
         uint256 slash;
         uint256 heavy;
         uint256 strike;
         uint256 tech;
-        uint256	magic;
+        uint256 magic;
         uint256 cat; // 1: weapon, 2: head, 3: body, 4: eye, 5: hand
     }
 
     string private url;
-    mapping (uint256=>uint256) public lastTokenIdOf;
+    mapping(uint256 => uint256) public lastTokenIdOf;
     event Mint(address indexed owner, uint256 tokenId);
     event UpdateName(uint256 indexed tokenId, string name);
     mapping(uint256 => Meta) private _metadata;
@@ -71,28 +70,39 @@ contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessC
         emit UpdateName(tokenId, name);
     }
 
-    function getMeta(uint256 tokenId) view external override returns(string memory name, uint256 slash, uint256 heavy, 
-        uint256 strike, uint256 tech, uint256 magic, uint256 cat
-    ) {
+    function getMeta(
+        uint256 tokenId
+    )
+        external
+        view
+        override
+        returns (
+            string memory name,
+            uint256 slash,
+            uint256 heavy,
+            uint256 strike,
+            uint256 tech,
+            uint256 magic,
+            uint256 cat
+        )
+    {
         Meta memory meta = _metadata[tokenId];
         return (meta.name, meta.slash, meta.heavy, meta.strike, meta.tech, meta.magic, meta.cat);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
-        internal
-        whenNotPaused
-        override(ERC721, ERC721Enumerable)
-    {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 batchSize
+    ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     // The following functions are overrides required by Solidity.
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, ERC721Enumerable, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

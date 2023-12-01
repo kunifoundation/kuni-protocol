@@ -3,17 +3,18 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AmaMinter is Ownable {
-  address private _minter;
-  constructor() {
-    _minter = msg.sender;
-  }
+    address private _minter;
 
-  modifier onlyMinter() {
-    require(msg.sender == _minter, "AmaMinter: caller is not the minter");
-    _;
-  }
+    constructor() {
+        _minter = msg.sender;
+    }
 
-  function setMinter(address minter_) public onlyOwner {
-    _minter = minter_;
-  }
+    modifier onlyMinter() {
+        require(msg.sender == _minter, "AmaMinter: caller is not the minter");
+        _;
+    }
+
+    function setMinter(address minter_) public onlyOwner {
+        _minter = minter_;
+    }
 }
