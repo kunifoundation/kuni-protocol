@@ -271,10 +271,10 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     ) internal returns (uint256) {
         uint256 refReward;
         if (referral != address(0x0)) {
-            address refOwer;
-            (reward, refReward, refOwer) = IReferral(referral).refPoint(msg.sender, reward);
-            if (refOwer != address(0x0) && refReward > 0) {
-                unclaimedGE[refOwer] += refReward;
+            address refOwner;
+            (reward, refReward, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
+            if (refOwner != address(0x0) && refReward > 0) {
+                unclaimedGE[refOwner] += refReward;
             }
         }
 
