@@ -83,7 +83,7 @@ describe('------------- Staking token ------------------', () => {
     
     this.saru    = await (await deployContract('KuniSaru')).waitForDeployment();
     this.scholar = await (await deployContract('Scholarship')).waitForDeployment()
-    this.referal = await (await deployContract('Referral')).waitForDeployment()
+    this.referal = await (await deployContract('Referral', [founder.address, 'AMAKUNI'])).waitForDeployment()
     this.item    = await (await deployContract('KuniItem')).waitForDeployment()
     // this.fMaterial = await (await ethers.deployContract('MaterialFactory')).waitForDeployment();
 
@@ -183,7 +183,8 @@ describe('------------- Staking token ------------------', () => {
     console.log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
     await cMintNft(this.saru, bob.address, 5)
     await cMintNft(this.saru, alex.address, 5)
-    await (await this.referal.connect(deployer).createCodeTo(founder.address, 'AMAKUNI', 1000)).wait()
+    
+    // await (await this.referal.connect(deployer).createCodeTo(founder.address, 'AMAKUNI', 1000)).wait()
     await (await this.referal.connect(bob).applyCode('AMAKUNI')).wait()
 
     this.kuni = this.mining

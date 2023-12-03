@@ -16,10 +16,8 @@ describe('------------- Staking token ------------------', () => {
     [developer, bob, alex, jame, ...addrs] = await ethers.getSigners();
     this.ow = developer
     this.code = 'AMAKUNI'
-    this.referral  = await (await ethers.deployContract('Referral')).waitForDeployment();
+    this.referral  = await (await ethers.deployContract('Referral', [developer.address, this.code])).waitForDeployment();
     // deploy
-
-    await (await this.referral.createCodeTo(developer.address, this.code, 5000)).wait()
     await (await this.referral.connect(bob).applyCode(this.code)).wait()
   })
 
@@ -36,9 +34,9 @@ describe('------------- Staking token ------------------', () => {
     // 
     await expect(this.referral.connect(bob).createCode(code, rate)).to.be.revertedWith("KUNI: ALREADY_EXISTS");
     
-    await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("KUNI: Apply a code first!");
-    tx = await this.referral.connect(alex).applyCode('AMAKUNI')
-    await tx.wait()
+    await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("KUNI: APPLY_A_CODE");
+    await (await this.referral.connect(alex).applyCode(this.code)).wait()
+
     await expect(this.referral.connect(bob).createCode("", rate)).to.be.revertedWith("KUNI: CODE_EMPTY");
     await expect(this.referral.connect(alex).createCode(code, rate)).to.be.revertedWith("KUNI: ALREADY_EXISTS");
     await expect(this.referral.connect(bob).createCode(NEW_CODE, 5000 * 3)).to.be.revertedWith("KUNI: MAX_RATE");

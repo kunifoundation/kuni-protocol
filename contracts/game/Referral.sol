@@ -17,15 +17,18 @@ contract Referral is IReferral, Ownable {
     uint256 public EXTRA = 5000;
     uint256 public constant PERCENT = 10000;
     string public ROOT_CODE;
-    string public CODE_PREFIX = "AMAKUNI_";
-    uint256 public RATE_PREFIX = 5000;
+    uint256 public RATE_BASE = 5000;
+
+    constructor(address _rootAddr, string memory _rootCode) {
+        _createCode(_rootAddr, _rootCode, RATE_BASE);
+        ROOT_CODE = _rootCode;
+    }
 
     function refPoint(address sender, uint256 point) external view override returns (uint256, uint256, address) {
         address refer = _ref[sender].ref;
         if (refer == address(0x0)) {
             return (point, 0, _ref[sender].ref);
         }
-
         uint256 extraReward = point.mul(EXTRA).div(PERCENT);
         uint256 refReward = extraReward.mul(_ref[sender].rate).div(PERCENT);
         return (point.add(extraReward.sub(refReward)), refReward, _ref[sender].ref);
@@ -38,8 +41,8 @@ contract Referral is IReferral, Ownable {
 
     function applyCreateCode(string calldata code, string calldata _myCode) external {
         _applyCode(code);
-        _createCode(msg.sender, _myCode, RATE_PREFIX);
-        emit CodeAppliedCreated(msg.sender, code, _myCode, RATE_PREFIX);
+        _createCode(msg.sender, _myCode, RATE_BASE);
+        emit CodeAppliedCreated(msg.sender, code, _myCode, RATE_BASE);
     }
 
     function _applyCode(string calldata code) internal {
@@ -55,16 +58,10 @@ contract Referral is IReferral, Ownable {
     function createCode(string calldata code, uint256 rate) external {
         require(
             keccak256(abi.encodePacked(userRefCode[msg.sender])) != keccak256(abi.encodePacked("")),
-            "KUNI: Apply a code first!"
+            "KUNI: APPLY_A_CODE"
         );
         _createCode(msg.sender, code, rate);
         emit CodeCreated(msg.sender, code, rate);
-    }
-
-    function createCodeTo(address to, string calldata code, uint256 rate) external onlyOwner {
-        _createCode(to, code, rate);
-        ROOT_CODE = code;
-        emit CodeCreated(to, code, rate);
     }
 
     function _createCode(address to, string memory code, uint256 rate) internal {
