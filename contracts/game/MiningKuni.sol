@@ -108,7 +108,8 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
 
     function mineKuni(address _ge, uint256 _amount) external override _geSupport(_ge) nonReentrant {
         require(_amount > 0, "KUNI: ZERO_AMOUNT");
-        _mineKuni(_ge, msg.sender, _amount, true);
+        _mineKuni(_ge, msg.sender, _amount);
+        IERC20(_ge).safeTransferFrom(address(msg.sender), address(this), _amount);
     }
 
     function mineKuniFrom(
@@ -116,20 +117,15 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         address _ge,
         uint256 _amount
     ) external override _onlyCoreGame _geSupport(_ge) nonReentrant {
-        if (_amount > 0) {
-            _mineKuni(_ge, sender, _amount, false);
-        }
+        _mineKuni(_ge, sender, _amount);
     }
 
-    function _mineKuni(address _ge, address sender, uint256 _amount, bool isTransfer) internal {
+    function _mineKuni(address _ge, address sender, uint256 _amount) internal {
         if (_amount > 0) {
             PoolInfo storage pool = poolInfo[_ge];
             UserInfo storage user = userInfo[_ge][sender];
             _updatePool(_ge);
             _harvest(_ge, sender);
-            if (isTransfer) {
-                IERC20(_ge).safeTransferFrom(address(sender), address(this), _amount);
-            }
             user.amount = user.amount.add(_amount);
             user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
             emit MineKuni(sender, _ge, _amount);
