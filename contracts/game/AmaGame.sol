@@ -122,14 +122,14 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function claim() external override nonReentrant onlyStart {
+    function claim() external override nonReentrant {
         for (uint256 inx = 0; inx < _materials.length; inx++) {
             require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
             _mClaim(_materials[inx], msg.sender);
         }
     }
 
-    function withdrawTokens(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant onlyStart {
+    function withdrawTokens(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
         require(kuniAmount <= kuniStakedOf[msg.sender], "KUNI: Exceeded!");
         uint256[] memory mValues = new uint256[](4);
         uint256[] memory calValues = new uint256[](4);
@@ -193,14 +193,14 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function claimGE() external override nonReentrant onlyStart {
+    function claimGE() external override nonReentrant {
         _claimGE(msg.sender);
         if (foundation != address(0x0)) {
             _claimGE(foundation);
         }
     }
 
-    function earnKuni() external nonReentrant onlyStart {
+    function earnKuni() external nonReentrant {
         _earnKuni(msg.sender);
         if (foundation != address(0x0)) {
             _earnKuni(foundation);
