@@ -2,8 +2,11 @@ require("@nomicfoundation/hardhat-toolbox");
 const fs = require('fs');
 
 const mnemonic = fs.readFileSync(".secret-bsc").toString().trim()
+
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
+  name: "Amakuni Core",
   // defaultNetwork: 'bsc',
   solidity: {
     version: "0.8.6",
@@ -36,7 +39,7 @@ module.exports = {
     },
   },
   mocha: {
-    timeout: 20000
+    timeout: 2000000
   }
 };
 

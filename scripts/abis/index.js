@@ -1,8 +1,8 @@
 module.exports = {
-  kuniItem: require('./KuniItem.json').abi,
-  kuniSaru: require('./KuniSaru.json').abi,
-  oldItem: require('./KuniItemmOld.json')
-}
+    kuniItem: require("./KuniItem.json").abi,
+    kuniSaru: require("./KuniSaru.json").abi,
+    oldItem: require("./KuniItemmOld.json"),
+};
 
 // async function addRoleMinterInv() {
 //   const kuniItem = new Contract(TOKENS.kuniItem, ABI.kuniItem, wallet)

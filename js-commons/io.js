@@ -4,9 +4,17 @@ const { FOLDER_EXPORT } = require('./cf')
 
 
 function toTokens(data, json) {
-  let rs = `${ json === 'json' ? '' : 'module.exports =' }` + '{\n'
-  for(const key in data) {
-    rs += `\t${key}: '${data[key]}',\n`
+  let rs = "";
+  if (json === 'json') {
+    rs = "{\n"
+    for(const key in data) {
+      rs += `\t${key}: "${data[key]}",\n`
+    }
+  } else {
+    rs = 'module.exports = {\n'
+    for(const key in data) {
+      rs += `\t"${key}": '${data[key]}',\n`
+    }
   }
   return `${rs}\n}`
 }

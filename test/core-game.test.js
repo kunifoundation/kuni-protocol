@@ -148,53 +148,36 @@ describe("------------- Staking token ------------------", () => {
         const balance = await deployer.provider.getBalance(await deployer.getAddress());
         const self = this;
         async function initSaru(start) {
-            let end = start + 150;
-            await initSaruData(self.meta, end - 150, end);
-            end = start + 150;
-            await initSaruData(self.meta, end - 150, end);
-            end = start + 150;
-            await initSaruData(self.meta, end - 150, end);
-            end = start + 150;
-            await initSaruData(self.meta, end - 150, end);
-            end = start + 150;
-            await initSaruData(self.meta, end - 150, end);
-            end = start + 150;
-            await initSaruData(self.meta, end - 150, end);
-            return end;
+            const limit = 125
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit);
+            return start;
         }
 
         let start = 0;
-
-        start = await initSaru(0);
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        // start = await initSaru(start)
-        log("ggggg 2: ", await ethers.provider.getBlockNumber());
-        console.log("inx", start);
-
-        console.log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        start = await initSaru(start);
+        log("block number: ", await ethers.provider.getBlockNumber());
+        log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
         await cMintNft(this.saru, bob.address, 5);
         await cMintNft(this.saru, alex.address, 5);
 
-        // await (await this.referal.connect(deployer).createCodeTo(founder.address, 'AMAKUNI', 1000)).wait()
         await (await this.referal.connect(bob).applyCode("AMAKUNI")).wait();
-
         this.kuni = this.mining;
-
-        // function logType(arr) {
-        //   log(arr.map(it => it/parseUnits('1', 17)).join(', '))
-        // }
-        // const m = await this.meta.getPowerTeam([1, 2])
-        // logType(m[0])
-        // logType(m[1])
-        // log(m[2]/e1)
     });
 
     it("00. Check material", async function () {

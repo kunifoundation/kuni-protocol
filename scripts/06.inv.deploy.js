@@ -16,10 +16,7 @@ async function main() {
         1,
     );
 
-    let tx = await this.inv.setMaterialPic(
-        [material.ore, material.stone, material.cotton, material.lumber],
-        [1, 2, 3, 4],
-    );
+    let tx = await this.inv.setMaterialPic([material.ore, material.stone, material.cotton, material.lumber], [1, 2, 3, 4]);
     await tx.wait();
 
     // await (await this.inv.setMining(kuniGE.kuni)).wait()

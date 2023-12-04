@@ -27,7 +27,7 @@ async function setMiningKuni() {
 async function coreGame() {
     log("CORE GAME");
     this.game = await loadContractFrom(TOKENS.amaGame, "AmaGame");
-    log(await this.game.kuniItem());
+    // log(await this.game.kuniItem());
     // await (await this.game.setGE(TOKENS.ge)).wait()
     // log('GE DONE')
     // await (await this.game.setMining(TOKENS.kuni)).wait()
@@ -76,10 +76,7 @@ async function initData() {
 }
 
 async function createCodeRef() {
-    const referral = await loadContractAt(
-        "Referral",
-        TOKENS.referral,
-    )(await referral.createCodeTo(wFourder, "AMAKUNI", 5000)).wait();
+    const referral = await loadContractAt("Referral", TOKENS.referral)(await referral.createCodeTo(wFourder, "AMAKUNI", 5000)).wait();
 }
 
 async function setOldItemRole() {
@@ -104,13 +101,13 @@ async function setupKuniItem() {
 
 async function main() {
     // await setMiningKuni();
-    // await coreGame()
+    // await coreGame();
     // await invGame()
     // await createCodeRef()
     // await initData()
     // await updateEco()
     // await setOldItemRole()
-    await setupKuniItem();
+    // await setupKuniItem();
 }
 
 main()

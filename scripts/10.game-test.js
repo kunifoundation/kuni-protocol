@@ -18,9 +18,7 @@ function sleep(ms) {
 
 async function getTokenIds(nft, addr) {
     const total = await nft.balanceOf(addr);
-    const tokenIds = (
-        await Promise.all(_.range(0, toNumber(total)).map((index) => nft.tokenOfOwnerByIndex(addr, index)))
-    ).map((t) => toNumber(t));
+    const tokenIds = (await Promise.all(_.range(0, toNumber(total)).map((index) => nft.tokenOfOwnerByIndex(addr, index)))).map((t) => toNumber(t));
 
     return {total, tokenIds};
 }

@@ -52,13 +52,13 @@ module.exports.initPowerEffData = async function(cMetadata) {
   await tx.wait()
 }
 
-
 // Saru info
 module.exports.initSaruData = async function(cMetadata, min, max) {
-  const kuniSaruData   = fnReadFile('./kuni-data/KUNI_SARU.csv', '\n')
+  const kuniSaruData = fnReadFile('./kuni-data/KUNI_SARU.csv', '\n')
   const saruData = fnToBatchNftV2(kuniSaruData, min, max)
   let tx = await cMetadata.addNftBatch(saruData.keys, saruData.vals)
   await tx.wait()
+  console.log(`Saru Index: ${min} => ${max}`)
 }
 
 

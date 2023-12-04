@@ -194,7 +194,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         if (user.amount > 0) {
             PoolInfo storage pool = poolInfo[ge];
             uint256 pendingAmount = user.pendingReward;
-            if (lastRewardBlock < block.number) {
+            if (lastRewardBlock <= block.number) {
                 uint256 duration = block.number - lastRewardBlock;
                 if (duration > BLOCK_LIMIT) {
                     duration = BLOCK_LIMIT;
