@@ -269,9 +269,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256[][] calldata itemIds,
         uint256 totalItem
     ) internal returns (uint256) {
-        uint256 refReward;
         if (referral != address(0x0)) {
             address refOwner;
+            uint256 refReward;
             (reward, refReward, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
             if (refOwner != address(0x0) && refReward > 0) {
                 unclaimedGE[refOwner] += refReward;
@@ -284,9 +284,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
             (address owner, uint256 percent) = scholar.ownerInfo(kuniSaru, tokenIds[inx]);
             if (owner == msg.sender || owner == address(0x0)) continue;
-            refReward = perReward.mul(percent).div(10000);
-            unclaimedGE[owner] = unclaimedGE[owner].add(refReward);
-            myReward = myReward.sub(refReward);
+            uint256 saruScholarFee = perReward.mul(percent).div(10000);
+            unclaimedGE[owner] = unclaimedGE[owner].add(saruScholarFee);
+            myReward = myReward.sub(saruScholarFee);
         }
 
         // share items
@@ -296,9 +296,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
                 if (tokenId == 0x0) continue;
                 (address owner, uint256 percent) = scholar.ownerInfo(kuniItem, tokenId);
                 if (owner == msg.sender || owner == address(0x0)) continue;
-                refReward = perReward.mul(percent).div(10000);
-                unclaimedGE[owner] = unclaimedGE[owner].add(refReward);
-                myReward = myReward.sub(refReward);
+                uint256 itemScholarFee = perReward.mul(percent).div(10000);
+                unclaimedGE[owner] = unclaimedGE[owner].add(itemScholarFee);
+                myReward = myReward.sub(itemScholarFee);
             }
         }
         return myReward;
