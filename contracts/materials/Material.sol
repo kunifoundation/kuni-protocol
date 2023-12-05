@@ -36,7 +36,10 @@ contract Material is ERC20, Ownable, IMaterial {
 
     function getRewardForMiner(uint256 _from, uint256 _to) external view override returns (uint256) {
         if (_from >= _to) return 0;
-        return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
+        return
+            _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply().add(_burnSupply)).mul(RATE).div(BASE_RATE)).div(
+                NUM_OF_BLOCK_PER_DAY
+            );
     }
 
     function _burn(address account, uint256 amount) internal override {
@@ -52,7 +55,7 @@ contract Material is ERC20, Ownable, IMaterial {
     }
 
     modifier onlyMinter() {
-        require(msg.sender == minter, "Amakuni: caller is not the minter");
+        require(msg.sender == minter, "KUNI: caller is not the minter");
         _;
     }
 

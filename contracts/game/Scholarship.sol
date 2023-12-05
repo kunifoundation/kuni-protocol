@@ -25,8 +25,8 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
     mapping(address => mapping(uint256 => ScholarInfo)) public rateOf;
 
     function ask(address nftAddr, uint256 tokenId, uint256 rate) external override nonReentrant {
-        require(nftAddr != address(0), "Scholarship: address to the zero address");
-        require(rate > 0 && rate <= PERCENT, "Scholarship: Rate > 0 && Rate <= 10000");
+        require(nftAddr != address(0), "KUNI: address to the zero address");
+        require(rate > 0 && rate <= PERCENT, "KUNI: Rate > 0 && Rate <= 10000");
         _ask(nftAddr, tokenId, rate);
         emit Ask(nftAddr, msg.sender, tokenId, rate);
     }
@@ -66,8 +66,8 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
 
     function _cancel(address nftAddr, uint256 tokenId) internal {
         ScholarInfo memory info = rateOf[nftAddr][tokenId];
-        require(info.owner == msg.sender, "Scholarship: You is not owner");
-        require(_nfts[nftAddr][address(this)].contains(tokenId), "Scholarship: Token not exists!");
+        require(info.owner == msg.sender, "KUNI: You is not owner");
+        require(_nfts[nftAddr][address(this)].contains(tokenId), "KUNI: Token not exists!");
         _deleteToken(nftAddr, tokenId);
     }
 

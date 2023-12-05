@@ -6,18 +6,25 @@ const mainTest = require("./00.deploy.test");
 const {deployContract} = ethers;
 
 const log = console.log;
-const testnet = true;
+const IS_TEST = true;
+
+const FOUNDATION_ADDR = "";
+const GENESIS_AT = 0;
+const REF_ROOT = "AMAKUNI";
+const KUNI_SARU_ADDR = "";
 
 async function main() {
     let deployer, alex, bob, wFounder;
-    let foundation = "";
-    let REF_ROOT = "AMAKUNI";
-    let TOKENS = {kuniSaru: ""};
+    let foundation = FOUNDATION_ADDR;
+    let refRoot = REF_ROOT;
+    let TOKENS = {kuniSaru: KUNI_SARU_ADDR};
 
     [deployer, alex, bob, wFounder, ...addrs] = await ethers.getSigners();
+    if (!foundation) {
+        foundation = wFounder.address;
+    }
 
-    foundation = wFounder.address;
-    const balanceStart = await ethers.provider.getBalance(deployer.address);
+    const BALANCE_START = await ethers.provider.getBalance(deployer.address);
     let nonce = await ethers.provider.getTransactionCount(deployer.address);
     log(" ======= DEPLOY..... ========\n");
     log("DEPLOY COMMON...");
@@ -27,7 +34,7 @@ async function main() {
         log("1. KuniSaru: ", TOKENS.kuniSaru);
     }
 
-    this.referral = await (await deployContract("Referral", [foundation, REF_ROOT])).waitForDeployment({nonce: ++nonce});
+    this.referral = await (await deployContract("Referral", [foundation, refRoot])).waitForDeployment({nonce: ++nonce});
     TOKENS.referral = await this.referral.getAddress();
     log("2. Referral: ", TOKENS.referral);
 
@@ -79,7 +86,7 @@ async function main() {
 
     log("\nDEPLOY CORE GAME.....");
     this.game = await (
-        await deployContract("AmaGame", [TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral, 123])
+        await deployContract("AmaGame", [TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral, GENESIS_AT])
     ).waitForDeployment({nonce: ++nonce});
     TOKENS.amaGame = await this.game.getAddress();
     log("14. amaGame: ", TOKENS.amaGame);
@@ -127,20 +134,22 @@ async function main() {
         const limit = 125;
         const st = start * limit;
         await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
-        await initSaruData(self.meta, start * limit, ++start * limit);
+        if (!IS_TEST) {
+            await initSaruData(self.meta, start * limit, ++start * limit);
+            await initSaruData(self.meta, start * limit, ++start * limit);
+            await initSaruData(self.meta, start * limit, ++start * limit);
+            await initSaruData(self.meta, start * limit, ++start * limit);
+            await initSaruData(self.meta, start * limit, ++start * limit);
+            await initSaruData(self.meta, start * limit, ++start * limit);
+            await initSaruData(self.meta, start * limit, ++start * limit);
+        }
         log(`Saru init ${st} => ${start * limit}`);
         return start;
     }
 
     let start = 0;
     start = await initSaru(start);
-    if (!testnet) {
+    if (!IS_TEST) {
         start = await initSaru(start);
         start = await initSaru(start);
         start = await initSaru(start);
@@ -151,15 +160,15 @@ async function main() {
         start = await initSaru(start);
         start = await initSaru(start);
     }
-    log("Balance Fee: ", ethers.formatEther(balanceStart - (await ethers.provider.getBalance(deployer.address))), "ETH");
+    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
 
     writeWithToken(TOKENS, __filename, 1, "json");
-    if (testnet) {
+    if (IS_TEST) {
         await mainTest({
             ACC: {alex, bob, wFounder, deployer},
             TOKENS,
             foundation,
-            REF_ROOT,
+            REF_ROOT: refRoot,
             ...this,
         });
     }

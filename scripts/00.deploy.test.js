@@ -16,7 +16,7 @@ async function approveToken(token, acc, spender) {
     if ((await token.allowance(acc.address, spender)) <= 0) {
         const t = await token.connect(acc).approve(spender, MaxUint256);
         await t.wait();
-        await sleep(150);
+        // await sleep(150);
     }
 }
 
@@ -100,6 +100,7 @@ async function mainTest(core) {
     log("$Kuni: ", formatEther(await core.mining.balanceOf(foundation)));
 
     log("$kuni in pool", formatEther(await core.mining.balanceOf(TOKENS.kuni)));
+    log("$GE", formatEther(await core.ge.balanceOf(TOKENS.ge)));
 }
 
 module.exports = mainTest;

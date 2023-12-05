@@ -48,7 +48,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     address public ge;
     address public referral;
     mapping(address => uint256) public unclaimedGE;
-    uint256 genesisTime;
+    uint256 getGenesisAt;
 
     constructor(
         address kuniSaru_,
@@ -56,14 +56,14 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         address eco_,
         address scholar_,
         address refer,
-        uint256 _genesisTime
+        uint256 _genesisAt
     ) {
         kuniSaru = kuniSaru_;
         kuniItem = kuniItem_;
         eco = IEcoGame(eco_);
         scholar = IScholarship(scholar_);
         referral = refer;
-        genesisTime = _genesisTime;
+        getGenesisAt = _genesisAt;
     }
 
     function deposit(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
@@ -215,8 +215,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
                 IMaterial(ge).mint(sender, amount);
                 emit ClaimGE(sender, amount);
             } else {
-                IMaterial(ge).mint(miningKuni, amount);
                 IMiningKuni(miningKuni).mineKuniFrom(sender, ge, amount);
+                IMaterial(ge).mint(miningKuni, amount);
                 emit EarnKuni(sender, amount);
             }
             unclaimedGE[sender] = 0;
@@ -271,10 +271,10 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     ) internal returns (uint256) {
         if (referral != address(0x0)) {
             address refOwner;
-            uint256 ownerRef;
-            (reward, ownerRef, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
-            if (refOwner != address(0x0) && ownerRef > 0) {
-                unclaimedGE[refOwner] += ownerRef;
+            uint256 refReward;
+            (reward, refReward, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
+            if (refOwner != address(0x0) && refReward > 0) {
+                unclaimedGE[refOwner] += refReward;
             }
         }
 
@@ -590,12 +590,12 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function setGenesisTime(uint256 _start) external onlyOwner {
-        genesisTime = _start;
+    function setGenesisAt(uint256 _start) external onlyOwner {
+        getGenesisAt = _start;
     }
 
     modifier onlyStart() {
-        require(genesisTime < block.timestamp, "KUNI: Not open!");
+        require(getGenesisAt < block.timestamp, "KUNI: Not open!");
         _;
     }
 
