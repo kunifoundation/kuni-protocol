@@ -9,7 +9,7 @@ const log = console.log;
 const IS_TEST = true;
 
 const FOUNDATION_ADDR = "";
-const GENESIS_AT = 0;
+const GENESIS_TIME = 0;
 const REF_ROOT = "AMAKUNI";
 const KUNI_SARU_ADDR = "";
 
@@ -86,7 +86,7 @@ async function main() {
 
     log("\nDEPLOY CORE GAME.....");
     this.game = await (
-        await deployContract("AmaGame", [TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral, GENESIS_AT])
+        await deployContract("AmaGame", [GENESIS_TIME, TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral])
     ).waitForDeployment({nonce: ++nonce});
     TOKENS.amaGame = await this.game.getAddress();
     log("14. amaGame: ", TOKENS.amaGame);

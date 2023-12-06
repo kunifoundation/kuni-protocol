@@ -17,41 +17,15 @@ contract Material is ERC20, Ownable, IMaterial {
 
     address public minter;
 
-    uint256 private _burnSupply;
-
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
 
     function mint(address to, uint256 amount) external override onlyMinter {
         _mint(to, amount);
     }
 
-    function burn(uint256 amount) external virtual override {
-        _burn(msg.sender, amount);
-    }
-
-    function burnFrom(address account, uint256 amount) external virtual override {
-        _spendAllowance(account, msg.sender, amount);
-        _burn(account, amount);
-    }
-
     function getRewardForMiner(uint256 _from, uint256 _to) external view override returns (uint256) {
         if (_from >= _to) return 0;
-        return
-            _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply().add(_burnSupply)).mul(RATE).div(BASE_RATE)).div(
-                NUM_OF_BLOCK_PER_DAY
-            );
-    }
-
-    function _burn(address account, uint256 amount) internal override {
-        _burnSupply += amount;
-        super._burn(account, amount);
-    }
-
-    function circulatingSupply() external view override returns (uint256) {
-        if (MAX_SUPPLY > (totalSupply() + _burnSupply)) {
-            return MAX_SUPPLY - totalSupply() - _burnSupply;
-        }
-        return 0;
+        return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
     }
 
     modifier onlyMinter() {

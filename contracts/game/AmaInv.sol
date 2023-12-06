@@ -6,15 +6,16 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IAmaInv.sol";
 import "../interfaces/IEcoGame.sol";
-import "../interfaces/IERC20Burnable.sol";
 import "../interfaces/IERC721Mint.sol";
 import "../nfts/KuniItem.sol";
 import "../interfaces/IMiningKuni.sol";
 
 contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
     mapping(address => uint256) public materialPic;
     mapping(address => uint256) public currentCap;
@@ -50,7 +51,7 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
             if (materialPic[addr[index]] > 0 && amounts[index] > 1e12) {
                 pic[index] = materialPic[addr[index]];
                 total = total.add(amounts[index]);
-                IERC20Burnable(addr[index]).burnFrom(msg.sender, amounts[index]);
+                IERC20(addr[index]).safeTransferFrom(address(msg.sender), address(this), amounts[index]);
             } else {
                 revert("KUNI: Material not support or qty low!");
             }

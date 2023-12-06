@@ -54,9 +54,9 @@ describe("------------- Staking token ------------------", () => {
         console.log(tokenIds.map((t) => Number(t)));
         const RATE = 6900;
         // ask scholar tokenId
-        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("Scholarship: Rate > 0 && Rate <= 10000");
-        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("Scholarship: Rate > 0 && Rate <= 10000");
-        await expect(this.amatsu.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("Scholarship: address to the zero address");
+        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
+        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
+        await expect(this.amatsu.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("KUNI: address to the zero address");
         tx = await this.amatsu.connect(bob).ask(this.saruAddr, 1, RATE);
         await expect(this.amatsu.connect(bob).ask(this.saruAddr, 5, RATE)).to.revertedWith("ERC721: transfer from incorrect owner");
         await tx.wait();
@@ -67,7 +67,7 @@ describe("------------- Staking token ------------------", () => {
         expect(bob.address).equal(tx[0]);
         expect(RATE).equal(tx[1]);
 
-        await expect(this.amatsu.connect(alex).cancel(this.saruAddr, 1)).revertedWith("Scholarship: You is not owner");
+        await expect(this.amatsu.connect(alex).cancel(this.saruAddr, 1)).revertedWith("KUNI: You is not owner");
         tx = await this.amatsu.connect(bob).cancel(this.saruAddr, 1);
         await tx.wait();
 
@@ -75,7 +75,7 @@ describe("------------- Staking token ------------------", () => {
         expect(ZeroAddress).equal(tx[0]);
         expect(0).equal(tx[1]);
         expect(await this.kuniSaru.balanceOf(bob.address)).equal(4);
-        await expect(this.amatsu.connect(bob).cancel(this.saruAddr, 2)).to.revertedWith("Scholarship: You is not owner");
+        await expect(this.amatsu.connect(bob).cancel(this.saruAddr, 2)).to.revertedWith("KUNI: You is not owner");
         tx = await this.amatsu.ownerInfo(this.saruAddr, 0);
         expect(ZeroAddress).equal(tx[0]);
         expect(0).equal(tx[1]);

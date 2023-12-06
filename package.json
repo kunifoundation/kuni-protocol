@@ -18,6 +18,7 @@
     "prettier": "^3.1.0",
     "prettier-plugin-solidity": "^1.2.0",
     "solidity-coverage": "^0.8.4",
+    "solidity-docgen": "^0.6.0-beta.36",
     "typechain": "^8.3.1"
   },
   "license": "MIT",
@@ -25,6 +26,7 @@
     "lodash": "^4.17.21"
   },
   "scripts": {
-    "prettier": "npx prettier --write --plugin=prettier-plugin-solidity 'contracts/**/*.sol'"
+    "prettier": "npx prettier --write --plugin=prettier-plugin-solidity 'contracts/**/*.sol'",
+    "docs": "yarn prettier && rm -rf docs && npx hardhat clean && npx hardhat docgen"
   }
 }

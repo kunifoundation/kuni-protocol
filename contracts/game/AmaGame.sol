@@ -48,22 +48,22 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     address public ge;
     address public referral;
     mapping(address => uint256) public unclaimedGE;
-    uint256 getGenesisAt;
+    uint256 public getGenesisTime;
 
     constructor(
+        uint256 _genesisTime,
         address kuniSaru_,
         address kuniItem_,
         address eco_,
         address scholar_,
-        address refer,
-        uint256 _genesisAt
+        address refer
     ) {
         kuniSaru = kuniSaru_;
         kuniItem = kuniItem_;
         eco = IEcoGame(eco_);
         scholar = IScholarship(scholar_);
         referral = refer;
-        getGenesisAt = _genesisAt;
+        getGenesisTime = _genesisTime;
     }
 
     function deposit(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
@@ -590,12 +590,12 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function setGenesisAt(uint256 _start) external onlyOwner {
-        getGenesisAt = _start;
+    function setGenesisTime(uint256 _start) external onlyOwner {
+        getGenesisTime = _start;
     }
 
     modifier onlyStart() {
-        require(getGenesisAt < block.timestamp, "KUNI: Not open!");
+        require(getGenesisTime < block.timestamp, "KUNI: Not open!");
         _;
     }
 

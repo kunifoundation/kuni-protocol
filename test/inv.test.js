@@ -98,12 +98,12 @@ describe("------------- Staking token ------------------", () => {
 
         this.game = await (
             await deployContract("AmaGame", [
+                10,
                 await this.saru.getAddress(),
                 await this.item.getAddress(),
                 await this.eco.getAddress(),
                 await this.scholar.getAddress(),
                 await this.referal.getAddress(),
-                10,
             ])
         ).waitForDeployment();
 

@@ -8,7 +8,7 @@ const log = console.log;
 async function main() {
     log("deploy.....");
     this.amaGame = await (
-        await ethers.deployContract("AmaGame", [nft.kuniSaru, nft.kuniItem, cm.ecoGame, scholarship, cm.referral])
+        await ethers.deployContract("AmaGame", [0, nft.kuniSaru, nft.kuniItem, cm.ecoGame, scholarship, cm.referral])
     ).waitForDeployment();
 
     writeWithToken(

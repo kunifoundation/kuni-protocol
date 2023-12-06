@@ -23,10 +23,6 @@ contract GreenEnergy is ERC20("GreenEnergy", "GE"), Ownable, IERC20Burnable, IER
         _burn(account, amount);
     }
 
-    function circulatingSupply() external view override returns (uint256) {
-        return totalSupply();
-    }
-
     modifier onlyMinter() {
         require(msg.sender == _minter, "AmaMinter: caller is not the minter");
         _;

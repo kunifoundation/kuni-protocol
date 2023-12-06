@@ -1,6 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 const fs = require('fs');
-
+require("solidity-docgen")
 const mnemonic = fs.readFileSync(".secret-bsc").toString().trim()
 
 
@@ -40,6 +40,16 @@ module.exports = {
   },
   mocha: {
     timeout: 2000000
+  },
+  docgen: {
+    root: process.cwd(),
+    sourcesDir: './contracts',
+    outputDir: 'docs',
+    pages: () => "README.MD",
+    exclude: [],
+    theme: 'markdown',
+    collapseNewlines: true,
+    pageExtension: '.md',
   }
 };
 
