@@ -595,7 +595,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
 
     modifier onlyStart() {
-        require(getGenesisTime < block.timestamp, "KUNI: Not open!");
+        require(getGenesisTime <= block.timestamp, "KUNI: Not open!");
         _;
     }
 
