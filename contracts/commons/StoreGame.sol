@@ -4,15 +4,11 @@ pragma solidity ^0.8.6;
 import "../interfaces/IAmaGame.sol";
 import "../interfaces/IAmaInv.sol";
 import "../interfaces/IStoreGame.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract StoreGame is IStoreGame, AccessControl {
+contract StoreGame is IStoreGame, Ownable {
     address public coreGame;
     address public invGame;
-
-    constructor() {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    }
 
     function stageOf(address player) external view override returns (uint256) {
         return IAmaGame(coreGame).stageOf(player);
@@ -37,7 +33,7 @@ contract StoreGame is IStoreGame, AccessControl {
         stage = IAmaGame(coreGame).stageOf(player);
     }
 
-    function updateGame(address core, address inv) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateGame(address core, address inv) external onlyOwner {
         coreGame = core;
         invGame = inv;
     }

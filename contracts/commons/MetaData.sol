@@ -2,10 +2,10 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IMetaData.sol";
 
-contract MetaData is AccessControl, IMetaData {
+contract MetaData is Ownable, IMetaData {
     using SafeMath for uint256;
 
     // SLASH; HEAVY; STRIKE; TECH; MAGIC
@@ -20,12 +20,8 @@ contract MetaData is AccessControl, IMetaData {
 
     mapping(uint256 => mapping(uint256 => uint256)) public continents;
 
-    constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    }
-
     // Props
-    function addPower(uint256 prop, uint256[] calldata _power) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addPower(uint256 prop, uint256[] calldata _power) external override onlyOwner {
         _addPower(prop, _power);
     }
 
@@ -33,10 +29,7 @@ contract MetaData is AccessControl, IMetaData {
         powers[prop] = NFTPartProp(_power[0], _power[1], _power[2], _power[3], _power[4], _power[5]);
     }
 
-    function addPowerBatch(
-        uint256[] calldata props,
-        uint256[][] calldata _powers
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addPowerBatch(uint256[] calldata props, uint256[][] calldata _powers) external override onlyOwner {
         for (uint256 index = 0; index < props.length; index++) {
             // _slash, _heavy, _strike, _tech, _magic;
             _addPower(props[index], _powers[index]);
@@ -90,7 +83,7 @@ contract MetaData is AccessControl, IMetaData {
         }
     }
 
-    function addEfficiency(uint256 prop, uint256[] calldata eff) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addEfficiency(uint256 prop, uint256[] calldata eff) external override onlyOwner {
         _addEfficiency(prop, eff);
     }
 
@@ -99,10 +92,7 @@ contract MetaData is AccessControl, IMetaData {
         efficiencies[prop] = KuniEfficiency(eff[0], eff[1], eff[2], eff[3]);
     }
 
-    function addEfficiencyBatch(
-        uint256[] calldata effPro,
-        uint256[][] calldata effVals
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addEfficiencyBatch(uint256[] calldata effPro, uint256[][] calldata effVals) external override onlyOwner {
         for (uint256 index = 0; index < effPro.length; index++) {
             _addEfficiency(effPro[index], effVals[index]);
         }
@@ -169,7 +159,7 @@ contract MetaData is AccessControl, IMetaData {
     - _tokenId: tokenId[]
     - props: [[hand, weapon, head, eyes, body, hair, cat]]
    */
-    function addNft(uint256 _tokenId, uint256[] memory props) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addNft(uint256 _tokenId, uint256[] memory props) external override onlyOwner {
         // KuniSaru(hand, weapon, head, eyes, body, hair);
         sarus[_tokenId] = props;
     }
@@ -178,10 +168,7 @@ contract MetaData is AccessControl, IMetaData {
     - _tokenId: tokenId
     - props: hand, weapon, head, eyes, body, hair, cat
   */
-    function addNftBatch(
-        uint256[] memory tokenIds,
-        uint256[][] memory props
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addNftBatch(uint256[] memory tokenIds, uint256[][] memory props) external override onlyOwner {
         for (uint256 index = 0; index < tokenIds.length; index++) {
             // hand, weapon, head, eyes, body, hair;
             sarus[tokenIds[index]] = props[index];
@@ -189,10 +176,7 @@ contract MetaData is AccessControl, IMetaData {
     }
 
     // SLASH; HEAVY; STRIKE; TECH; MAGIC;
-    function addMaterials(
-        uint256[] memory pic,
-        uint256[][] memory data
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addMaterials(uint256[] memory pic, uint256[][] memory data) external override onlyOwner {
         for (uint256 index = 0; index < data.length; index++) {
             materials[pic[index]] = data[index];
         }
@@ -206,10 +190,7 @@ contract MetaData is AccessControl, IMetaData {
         return (itemCrafts[_key].name, itemCrafts[_key].cat);
     }
 
-    function addItemCraft(
-        string[] memory names,
-        uint256[][] memory data
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addItemCraft(string[] memory names, uint256[][] memory data) external override onlyOwner {
         for (uint256 index = 0; index < data.length; index++) {
             // name, cat;
             itemCrafts[data[index][0]] = ItemCraft(names[index], data[index][1]);
@@ -243,7 +224,7 @@ contract MetaData is AccessControl, IMetaData {
         return continents[contin][_type];
     }
 
-    function _addContinentalMul(uint256 contin, uint256[] calldata multipliers) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+    function _addContinentalMul(uint256 contin, uint256[] calldata multipliers) internal onlyOwner {
         for (uint256 inx = 0; inx < multipliers.length; inx++) {
             continents[contin][inx + 1] = multipliers[inx];
         }

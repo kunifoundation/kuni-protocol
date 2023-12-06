@@ -160,6 +160,26 @@ async function main() {
         start = await initSaru(start);
         start = await initSaru(start);
     }
+
+    log("\n=========== TRANSFER OWNERSHIP ===========\n")
+    nonce = await ethers.provider.getTransactionCount(deployer.address);
+    this.eco.transferOwnership(foundation, {nonce: nonce++})
+    this.meta.transferOwnership(foundation, {nonce: nonce++})
+    this.storeGame.transferOwnership(foundation, {nonce: nonce++})
+
+    this.game.transferOwnership(foundation, {nonce: nonce++})
+    this.inv.transferOwnership(foundation, {nonce: nonce++})
+    this.mining.transferOwnership(foundation, {nonce: nonce++})
+    this.referral.transferOwnership(foundation, {nonce: nonce++})
+    this.scholarship.transferOwnership(foundation, {nonce: nonce++})
+
+    this.ore.transferOwnership(foundation, {nonce: nonce++})
+    this.cotton.transferOwnership(foundation, {nonce: nonce++})
+    this.stone.transferOwnership(foundation, {nonce: nonce++})
+    this.lumber.transferOwnership(foundation, {nonce: nonce++})
+    this.ge.transferOwnership(foundation, {nonce: nonce++})
+    this.kuniItem.transferOwnership(foundation, {nonce: nonce++})
+
     log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
 
     writeWithToken(TOKENS, __filename, 1, "json");

@@ -4,11 +4,11 @@ pragma solidity ^0.8.6;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "../interfaces/IERC721Mint.sol";
 
-contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessControl, IERC721Mint {
+contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Burnable, Pausable, Ownable, IERC721Mint {
     struct Meta {
         string name;
         uint256 slash;
@@ -26,24 +26,20 @@ contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessC
     mapping(uint256 => Meta) private _metadata;
     address private _minter;
 
-    constructor() ERC721("KuniItem", "KUNIITEM") {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    }
-
     modifier onlyMinter() {
         require(msg.sender == _minter, "KuniItem: caller is not the minter!");
         _;
     }
 
-    function setMinter(address minter_) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setMinter(address minter_) public onlyOwner {
         _minter = minter_;
     }
 
-    function pause() public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function pause() public onlyOwner {
         _pause();
     }
 
-    function unpause() public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function unpause() public onlyOwner {
         _unpause();
     }
 
@@ -62,7 +58,7 @@ contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessC
         emit Mint(to, tokenId);
     }
 
-    function updateName(uint256 tokenId, string memory name) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateName(uint256 tokenId, string memory name) external onlyOwner {
         Meta memory meta = _metadata[tokenId];
         require(keccak256(abi.encodePacked(meta.name)) == keccak256(abi.encodePacked("")), "KUNI: CODE_EMPTY");
         meta.name = name;
@@ -100,13 +96,11 @@ contract KuniItem is ERC721, ERC721Enumerable, ERC721Burnable, Pausable, AccessC
     }
 
     // The following functions are overrides required by Solidity.
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC721, ERC721Enumerable, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
-    function setBaseUrl(string memory _uri) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setBaseUrl(string memory _uri) external onlyOwner {
         url = _uri;
     }
 

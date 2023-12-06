@@ -6,10 +6,11 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../interfaces/IScholarship.sol";
 
-contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
+contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable {
     using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
