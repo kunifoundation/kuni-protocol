@@ -15,7 +15,6 @@ contract EcoGame is IEcoGame, Ownable, IData {
 
     IMetaData private meta;
     uint256 public constant _DECIMALS = 1e18;
-    uint256 public constant KUNI_TOTAL = 1e4;
     // Battle Point
     uint256 public kBonus = 1e3; // => 0,001  mul 1e6
     uint256 public maxBonus = 2e6; // 1e6
