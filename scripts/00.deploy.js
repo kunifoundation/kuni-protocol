@@ -12,16 +12,21 @@ const FOUNDATION_ADDR = "";
 const GENESIS_TIME = 0;
 const REF_ROOT = "AMAKUNI";
 const KUNI_SARU_ADDR = "";
+const META_ITEM_URL = "";
 
 async function main() {
     let deployer, alex, bob, wFounder;
     let foundation = FOUNDATION_ADDR;
     let refRoot = REF_ROOT;
     let TOKENS = {kuniSaru: KUNI_SARU_ADDR};
-
+    let metaItemURL = META_ITEM_URL;
     [deployer, alex, bob, wFounder, ...addrs] = await ethers.getSigners();
     if (!foundation) {
         foundation = wFounder.address;
+    }
+
+    if (!metaItemURL) {
+        metaItemURL = "https://apitestnet.amakuni.com/api/kuni-item/"
     }
 
     const BALANCE_START = await ethers.provider.getBalance(deployer.address);
@@ -113,7 +118,7 @@ async function main() {
 
     log("04. Config kuni item...");
     await (await this.kuniItem.setMinter(TOKENS.amaInv, {nonce: ++nonce})).wait();
-    await (await kuniItem.setBaseUrl("https://apitestnet.amakuni.com/api/kuni-item/", {nonce: ++nonce})).wait();
+    await (await kuniItem.setBaseUrl(META_ITEM_URL, {nonce: ++nonce})).wait();
 
     log("05. Config minter for token...");
     await (await this.ore.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
