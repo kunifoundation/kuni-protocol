@@ -431,12 +431,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             return;
         }
 
-        if (user.rewardDebtAtBlock < block.number) {
-            uint256 reward = (user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM)).sub(user.rewardDebt);
-            user.pendingReward = user.pendingReward.add(reward);
-            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-            user.rewardDebtAtBlock = block.number;
-        }
+        uint256 reward = (user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM)).sub(user.rewardDebt);
+        user.pendingReward = user.pendingReward.add(reward);
+        user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
     }
 
     function _mDeposit(address mToken, address sender, uint256 _amount, uint256 multiplier) internal {

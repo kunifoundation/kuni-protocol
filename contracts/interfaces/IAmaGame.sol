@@ -28,7 +28,6 @@ interface IAmaGame {
         uint256 amount;
         uint256 pendingReward;
         uint256 rewardDebt;
-        uint256 rewardDebtAtBlock;
     }
 
     struct PoolInfo {
