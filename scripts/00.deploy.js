@@ -3,7 +3,7 @@ const {writeWithToken} = require("../js-commons/io");
 const {initPowerEffData, initCraftData, initSaruData} = require("../js-commons/ama-data");
 const mainTest = require("./00.deploy.test");
 
-const {deployContract} = ethers;
+const {deployContract, getContractFactory} = ethers;
 
 const log = console.log;
 const IS_TEST = true;
@@ -21,11 +21,8 @@ async function main() {
     let TOKENS = {kuniSaru: KUNI_SARU_ADDR};
     let metaItemURL = META_ITEM_URL;
     [deployer, alex, bob, wFounder, ...addrs] = await ethers.getSigners();
-    if (!foundation) {
+    if (IS_TEST) {
         foundation = wFounder.address;
-    }
-
-    if (!metaItemURL) {
         metaItemURL = "https://apitestnet.amakuni.com/api/kuni-item/"
     }
 
@@ -33,11 +30,15 @@ async function main() {
     let nonce = await ethers.provider.getTransactionCount(deployer.address);
     log(" ======= DEPLOY..... ========\n");
     log("DEPLOY COMMON...");
-    if (!TOKENS.kuniSaru) {
+    if (TOKENS.kuniSaru) {
+        this.saru = (await (getContractFactory("KuniSaru"))).attach(TOKENS.kuniSaru)
+    }
+    else {
+        ethers.contran
         this.saru = await (await deployContract("KuniSaru")).waitForDeployment({nonce: ++nonce});
         TOKENS.kuniSaru = await this.saru.getAddress();
-        log("1. KuniSaru: ", TOKENS.kuniSaru);
     }
+    log("1. KuniSaru: ", TOKENS.kuniSaru);
 
     this.referral = await (await deployContract("Referral", [foundation, refRoot])).waitForDeployment({nonce: ++nonce});
     TOKENS.referral = await this.referral.getAddress();
@@ -118,7 +119,7 @@ async function main() {
 
     log("04. Config kuni item...");
     await (await this.kuniItem.setMinter(TOKENS.amaInv, {nonce: ++nonce})).wait();
-    await (await kuniItem.setBaseUrl(META_ITEM_URL, {nonce: ++nonce})).wait();
+    await (await kuniItem.setBaseUrl(metaItemURL, {nonce: ++nonce})).wait();
 
     log("05. Config minter for token...");
     await (await this.ore.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
