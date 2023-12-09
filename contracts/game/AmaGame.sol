@@ -127,7 +127,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     function claim() external override nonReentrant {
         for (uint256 inx = 0; inx < _materials.length; inx++) {
             require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
-            _mClaim(_materials[inx], msg.sender);
+            _mClaim(_materials[inx]);
         }
     }
 
@@ -158,14 +158,16 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
         for (uint256 inx = 0; inx < _materials.length; inx++) {
             require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
-            _mWithdraw(_materials[inx], msg.sender, mValues[inx].add(kuniAmount), multipliers[inx]);
+            uint256 _amount = mValues[inx].add(kuniAmount).mul(multipliers[inx]).div(MAGIC_NUM);
+            _mWithdraw(_materials[inx], _amount);
         }
     }
 
     function withdraw() external override nonReentrant {
         for (uint256 inx = 0; inx < _materials.length; inx++) {
             require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
-            _mWithdraw(_materials[inx]);
+            UserInfo storage user = userInfo[_materials[inx]][msg.sender];
+            _mWithdraw(_materials[inx], user.amount);
         }
 
         // widthraw saru staked
@@ -447,9 +449,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function _mWithdraw(address mToken, address sender, uint256 _amount, uint256 multiplier) internal {
-        _amount = _amount.mul(multiplier).div(MAGIC_NUM);
-        UserInfo storage user = userInfo[mToken][sender];
+    function _mWithdraw(address mToken, uint256 _amount) internal {
+        UserInfo storage user = userInfo[mToken][msg.sender];
         PoolInfo storage pool = pools[mToken];
         if (_amount > 0 && _amount <= user.amount) {
             _mUpdatePool(mToken);
@@ -466,23 +467,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function _mWithdraw(address mToken) internal {
+    function _mClaim(address mToken) internal {
         UserInfo storage user = userInfo[mToken][msg.sender];
-        PoolInfo storage pool = pools[mToken];
-        uint256 _amount = user.amount;
-        if (_amount > 0) {
-            _mUpdatePool(mToken);
-            _harvest(mToken, user);
-            user.amount = 0;
-            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-            pool.supply = pool.supply.sub(_amount);
-            _transferToken(mToken, user.pendingReward);
-            user.pendingReward = 0;
-        }
-    }
-
-    function _mClaim(address mToken, address sender) internal {
-        UserInfo storage user = userInfo[mToken][sender];
         if (user.amount > 0) {
             _mUpdatePool(mToken);
             _harvest(mToken, user);

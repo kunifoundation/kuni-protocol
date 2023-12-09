@@ -32,7 +32,7 @@ interface IAmaGame {
 
     struct PoolInfo {
         address token;
-        uint256 supply; // How many allocation supply assigned to this pool. KUNIs to distribute per block.
+        uint256 supply; // How many allocation supply assigned to this pool. Point to distribute per block.
         uint256 lastRewardBlock; // Last block number that Materials distribution occurs.
         uint256 rewardPerShare; // Accumulated Rewards per share, times 1e12. See below.
     }

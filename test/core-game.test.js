@@ -11,6 +11,7 @@ const e100 = parseEther("100");
 const e50 = parseEther("50");
 const e1 = parseEther("1");
 const p16 = parseUnits("1", 16);
+const p12 = parseUnits("1", 12);
 
 const log = console.log;
 let tx;
@@ -164,15 +165,15 @@ describe("------------- Staking token ------------------", () => {
 
         let start = 0;
         start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
-        start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
+        // start = await initSaru(start);
         log("block number: ", await ethers.provider.getBlockNumber());
         log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
         await cMintNft(this.saru, bob.address, 5);
@@ -440,4 +441,39 @@ describe("------------- Staking token ------------------", () => {
         }
         // await sleep(10000)
     });
+
+    it('09. check pending', async function(){
+        const self = this
+        await (await this.game.connect(bob).deposit(e50, [2, 3, 4, 5])).wait()
+        await mine(500)
+        await (await this.game.connect(alex).deposit(0, [6, 7])).wait()
+        async function checkMaterialPending(acc, name, tokenIds) {
+            log(`\n========= BEFORE WITHDRAW ${name} =========`)
+            const saruStaked = await self.game.balanceOf(acc.address)
+            log("Saru staked", saruStaked)
+            
+            log('KUNI OF POOL', (await self.game.kuniStakedOf(acc.address))/p16)
+            log("ORE: ", (await self.game.pools(await self.ore.getAddress()))[1]/p16, (await self.game.pendingReward(await self.ore.getAddress(), acc.address)) / p12);
+            log("STONE: ", (await self.game.pendingReward(await self.stone.getAddress(), acc.address)) / p12);
+            log("COTTON: ", (await self.game.pendingReward(await self.cotton.getAddress(), acc.address)) / p12);
+            log("LUMBER: ", (await self.game.pendingReward(await self.lumber.getAddress(), acc.address)) / p12);
+            log(`========= AFFTER WITHDRAW ${name} =========`)
+            if (tokenIds) {
+                await (await self.game.connect(acc).withdrawTokens(0, tokenIds)).wait()
+            } else {
+                await (await self.game.connect(acc).withdraw()).wait()
+            }
+            
+            log("Saru staked", await self.game.balanceOf(acc.address))
+            log('KUNI OF POOL', (await self.game.kuniStakedOf(acc.address)/p16))
+            log("ORE: ", (await self.game.pools(await self.ore.getAddress()))[1]/p16, (await self.game.pendingReward(await self.ore.getAddress(), acc.address)) / p16);
+            log("STONE: ", (await self.game.pendingReward(await self.stone.getAddress(), acc.address)) / p16);
+            log("COTTON: ", (await self.game.pendingReward(await self.cotton.getAddress(), acc.address)) / p16);
+            log("LUMBER: ", (await self.game.pendingReward(await self.lumber.getAddress(), acc.address)) / p16);
+        }
+
+        await checkMaterialPending(alex, "Alex", [6])
+        await checkMaterialPending(bob, "Bob")
+        await checkMaterialPending(alex, "Alex")
+    })
 });
