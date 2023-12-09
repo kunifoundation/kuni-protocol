@@ -83,7 +83,6 @@ describe("------------- Staking token ------------------", () => {
         log("nonce", await deployer.provider.getTransactionCount(deployer.address));
 
         this.eco = await (await deployContract("EcoGame", [await this.meta.getAddress()])).waitForDeployment();
-        this.inv = await (await ethers.deployContract("AmaInv", [await this.eco.getAddress()])).waitForDeployment();
         this.mining = await (await ethers.deployContract("MiningKuni")).waitForDeployment();
 
         this.saru = await (await deployContract("KuniSaru")).waitForDeployment();
@@ -95,10 +94,12 @@ describe("------------- Staking token ------------------", () => {
         this.stone = await (await ethers.deployContract("Material", ["Stone", "STONE"])).waitForDeployment();
         this.cotton = await (await ethers.deployContract("Material", ["Cotton", "COTTON"])).waitForDeployment();
         this.lumber = await (await ethers.deployContract("Material", ["Lumber", "LUMBER"])).waitForDeployment();
+        this.inv = await (await ethers.deployContract("AmaInv", [await this.mining.getAddress(), await this.eco.getAddress()])).waitForDeployment();
 
         this.game = await (
             await deployContract("AmaGame", [
                 10,
+                await this.mining.getAddress(),
                 await this.saru.getAddress(),
                 await this.item.getAddress(),
                 await this.eco.getAddress(),

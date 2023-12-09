@@ -86,13 +86,13 @@ async function main() {
     log("12. kuniItem: ", TOKENS.kuniItem);
 
     log("DEPLOY TOKEN AmaInv.....");
-    this.inv = await (await deployContract("AmaInv", [TOKENS.ecoGame])).waitForDeployment({nonce: ++nonce});
+    this.inv = await (await deployContract("AmaInv", [TOKENS.kuni, TOKENS.ecoGame])).waitForDeployment({nonce: ++nonce});
     TOKENS.amaInv = await this.inv.getAddress();
     log("13. AmaInv: ", TOKENS.amaInv);
 
     log("\nDEPLOY CORE GAME.....");
     this.game = await (
-        await deployContract("AmaGame", [GENESIS_TIME, TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral])
+        await deployContract("AmaGame", [GENESIS_TIME, TOKENS.kuni, TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral])
     ).waitForDeployment({nonce: ++nonce});
     TOKENS.amaGame = await this.game.getAddress();
     log("14. amaGame: ", TOKENS.amaGame);
@@ -105,7 +105,7 @@ async function main() {
 
     log("01. Config game....");
     await (await this.game.setGE(TOKENS.ge, {nonce: nonce})).wait();
-    await (await this.game.setMining(TOKENS.kuni, {nonce: ++nonce})).wait();
+    // await (await this.game.setMining(TOKENS.kuni, {nonce: ++nonce})).wait();
     await (await this.game.setFoundation(foundation, {nonce: ++nonce})).wait();
     await (await this.game.setMaterials([TOKENS.ore, TOKENS.stone, TOKENS.cotton, TOKENS.lumber], {nonce: ++nonce})).wait();
     log("02. Config kuni mining....");
@@ -114,7 +114,7 @@ async function main() {
 
     log("03. Config kuni inv...");
     await (await this.inv.setMaterialPic([TOKENS.ore, TOKENS.stone, TOKENS.cotton, TOKENS.lumber], [1, 2, 3, 4], {nonce: ++nonce})).wait();
-    await (await this.inv.setMining(TOKENS.kuni, {nonce: ++nonce})).wait();
+    // await (await this.inv.setMining(TOKENS.kuni, {nonce: ++nonce})).wait();
     await (await this.inv.setKuniItem(TOKENS.kuniItem, {nonce: ++nonce})).wait();
 
     log("04. Config kuni item...");

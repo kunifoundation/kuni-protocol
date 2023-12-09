@@ -77,7 +77,6 @@ describe("------------- Staking token ------------------", () => {
         this.owner = deployer;
         this.meta = await (await deployContract("MetaData")).waitForDeployment();
         this.eco = await (await deployContract("EcoGame", [await this.meta.getAddress()])).waitForDeployment();
-        this.inv = await (await ethers.deployContract("AmaInv", [await this.eco.getAddress()])).waitForDeployment();
         this.mining = await (await ethers.deployContract("MiningKuni")).waitForDeployment();
 
         this.saru = await (await deployContract("KuniSaru")).waitForDeployment();
@@ -91,9 +90,12 @@ describe("------------- Staking token ------------------", () => {
         this.cotton = await (await ethers.deployContract("Material", ["Cotton", "COTTON"])).waitForDeployment();
         this.lumber = await (await ethers.deployContract("Material", ["Lumber", "LUMBER"])).waitForDeployment();
 
+        this.inv = await (await ethers.deployContract("AmaInv", [await this.mining.getAddress(), await this.eco.getAddress()])).waitForDeployment();
+
         this.game = await (
             await deployContract("AmaGame", [
                 25,
+                await this.mining.getAddress(),
                 await this.saru.getAddress(),
                 await this.item.getAddress(),
                 await this.eco.getAddress(),

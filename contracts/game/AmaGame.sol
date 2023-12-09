@@ -52,6 +52,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     constructor(
         uint256 _genesisTime,
+        address miningAddr,
         address kuniSaru_,
         address kuniItem_,
         address eco_,
@@ -64,6 +65,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         scholar = IScholarship(scholar_);
         referral = refer;
         getGenesisTime = _genesisTime;
+        miningKuni = miningAddr;
     }
 
     function deposit(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
@@ -181,16 +183,12 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256[] calldata tokenIds,
         uint256[][] calldata itemIds
     ) external override nonReentrant onlyStart {
-        if (miningKuni != address(0x0)) {
-            IMiningKuni(miningKuni).gasStart();
-        }
+        IMiningKuni(miningKuni).gasStart();
         require(itemIds.length <= tokenIds.length && tokenIds.length <= MAX_SARU, "KUNI: Unable to process request");
         _invalidSaru(tokenIds, msg.sender);
         _invalidKuniItem(itemIds, msg.sender);
         _fighting(tokenIds, itemIds);
-        if (miningKuni != address(0x0)) {
-            IMiningKuni(miningKuni).gasEnd();
-        }
+        IMiningKuni(miningKuni).gasEnd();
     }
 
     function claimGE() external override nonReentrant {
