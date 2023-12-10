@@ -120,7 +120,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
 
         for (uint256 index = 0; index < eff.length; index++) {
-            eff[index] = eff[index].mul(MAGIC_NUM).div(total).mul(amount).div(MAGIC_NUM);
+            eff[index] = eff[index].mul(amount).div(total);
         }
     }
 
@@ -195,9 +195,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     function claimGE() external override nonReentrant {
         _claimGE(msg.sender);
-        if (foundation != address(0x0)) {
-            _claimGE(foundation);
-        }
     }
 
     function earnKuni() external nonReentrant {
@@ -211,14 +208,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         if (ge == address(0x0)) return;
         uint256 amount = unclaimedGE[sender];
         if (amount > 0) {
-            if (miningKuni == address(0x0)) {
-                IMaterial(ge).mint(sender, amount);
-                emit ClaimGE(sender, amount);
-            } else {
-                IMiningKuni(miningKuni).mineKuniFrom(sender, ge, amount);
-                IMaterial(ge).mint(miningKuni, amount);
-                emit EarnKuni(sender, amount);
-            }
+            IMiningKuni(miningKuni).mineKuniFrom(sender, ge, amount);
+            IMaterial(ge).mint(miningKuni, amount);
+            emit EarnKuni(sender, amount);
             unclaimedGE[sender] = 0;
         }
     }
@@ -436,34 +428,31 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
     }
 
-    function _mDeposit(address mToken, address sender, uint256 _amount, uint256 multiplier) internal {
-        _amount = _amount.mul(multiplier).div(MAGIC_NUM);
+    function _mDeposit(address mToken, address sender, uint256 amount, uint256 multiplier) internal {
+        amount = amount.mul(multiplier).div(MAGIC_NUM);
         PoolInfo storage pool = pools[mToken];
-        if (_amount > 0) {
+        if (amount > 0) {
             UserInfo storage user = userInfo[mToken][sender];
             _mUpdatePool(mToken);
             _harvest(mToken, user);
-            user.amount = user.amount.add(_amount);
+            user.amount = user.amount.add(amount);
             user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-            pool.supply = pool.supply.add(_amount);
+            pool.supply = pool.supply.add(amount);
         }
     }
 
-    function _mWithdraw(address mToken, uint256 _amount) internal {
+    function _mWithdraw(address mToken, uint256 amount) internal {
         UserInfo storage user = userInfo[mToken][msg.sender];
         PoolInfo storage pool = pools[mToken];
-        if (_amount > 0 && _amount <= user.amount) {
+        if (amount > 0 && amount <= user.amount) {
             _mUpdatePool(mToken);
             _harvest(mToken, user);
-            uint256 mAmount = user.pendingReward;
-            if (_amount < user.amount) {
-                mAmount = _amount.mul(user.pendingReward).div(user.amount);
-            }
+            uint256 mAmount = amount.mul(user.pendingReward).div(user.amount);
             user.pendingReward = user.pendingReward.sub(mAmount);
             _transferToken(mToken, mAmount);
-            user.amount = user.amount.sub(_amount);
+            user.amount = user.amount.sub(amount);
             user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-            pool.supply = pool.supply.sub(_amount);
+            pool.supply = pool.supply.sub(amount);
         }
     }
 

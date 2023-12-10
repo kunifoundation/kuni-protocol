@@ -210,11 +210,11 @@ contract MetaData is Ownable, IMetaData {
         return v.slash.add(v.heavy).add(v.strike).add(v.tech).add(v.magic);
     }
 
-    function addContinental(uint256 contin, uint256[] calldata rates) external {
+    function addContinental(uint256 contin, uint256[] calldata rates) external onlyOwner {
         _addContinentalMul(contin, rates);
     }
 
-    function addContinentalMulBatch(uint256[] calldata contin, uint256[][] calldata multipliers) external {
+    function addContinentalMulBatch(uint256[] calldata contin, uint256[][] calldata multipliers) external onlyOwner {
         for (uint256 inx = 0; inx < contin.length; inx++) {
             _addContinentalMul(contin[inx], multipliers[inx]);
         }
@@ -224,7 +224,7 @@ contract MetaData is Ownable, IMetaData {
         return continents[contin][_type];
     }
 
-    function _addContinentalMul(uint256 contin, uint256[] calldata multipliers) internal onlyOwner {
+    function _addContinentalMul(uint256 contin, uint256[] calldata multipliers) internal {
         for (uint256 inx = 0; inx < multipliers.length; inx++) {
             continents[contin][inx + 1] = multipliers[inx];
         }
