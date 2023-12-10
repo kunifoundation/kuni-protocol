@@ -6,13 +6,14 @@ const mainTest = require("./00.deploy.test");
 const {deployContract, getContractFactory} = ethers;
 
 const log = console.log;
-const IS_TEST = true;
 
-const FOUNDATION_ADDR = "";
-const GENESIS_TIME = 0;
+const IS_TESTNET = true;
+
+const FOUNDATION_ADDR = "0xD0eE5b7b9eB03eD630BdFcfb9A5b656773139C55";
+const GENESIS_TIME = 1704250800; // 2024-01-03 10:00:00 GMT+07:00
 const REF_ROOT = "AMAKUNI";
-const KUNI_SARU_ADDR = "";
-const META_ITEM_URL = "";
+const KUNI_SARU_ADDR = "0x5fa891e95c948288A376C92fbd3AFc83D488d5a8";
+const META_ITEM_URL = "https://api.amakuni.com/api/kuni-item/";
 
 async function main() {
     let deployer, alex, bob, wFounder;
@@ -20,24 +21,24 @@ async function main() {
     let refRoot = REF_ROOT;
     let TOKENS = {kuniSaru: KUNI_SARU_ADDR};
     let metaItemURL = META_ITEM_URL;
+    let genesisTime = GENESIS_TIME;
     [deployer, alex, bob, wFounder, ...addrs] = await ethers.getSigners();
-    if (IS_TEST) {
-        foundation = wFounder.address;
-        metaItemURL = "https://apitestnet.amakuni.com/api/kuni-item/"
-    }
 
     const BALANCE_START = await ethers.provider.getBalance(deployer.address);
     let nonce = await ethers.provider.getTransactionCount(deployer.address);
+
     log(" ======= DEPLOY..... ========\n");
     log("DEPLOY COMMON...");
-    if (TOKENS.kuniSaru) {
-        this.saru = (await (getContractFactory("KuniSaru"))).attach(TOKENS.kuniSaru)
-    }
-    else {
-        ethers.contran
+    if (IS_TESTNET) {
+        genesisTime = 0;
+        foundation = wFounder.address;
+        metaItemURL = "https://apitestnet.amakuni.com/api/kuni-item/"
         this.saru = await (await deployContract("KuniSaru")).waitForDeployment({nonce: ++nonce});
         TOKENS.kuniSaru = await this.saru.getAddress();
+    } else {
+        this.saru = (await (getContractFactory("KuniSaru"))).attach(TOKENS.kuniSaru)
     }
+    
     log("1. KuniSaru: ", TOKENS.kuniSaru);
 
     this.referral = await (await deployContract("Referral", [foundation, refRoot])).waitForDeployment({nonce: ++nonce});
@@ -92,7 +93,7 @@ async function main() {
 
     log("\nDEPLOY CORE GAME.....");
     this.game = await (
-        await deployContract("AmaGame", [GENESIS_TIME, TOKENS.kuni, TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral])
+        await deployContract("AmaGame", [genesisTime, TOKENS.kuni, TOKENS.kuniSaru, TOKENS.kuniItem, TOKENS.ecoGame, TOKENS.scholarship, TOKENS.referral])
     ).waitForDeployment({nonce: ++nonce});
     TOKENS.amaGame = await this.game.getAddress();
     log("14. amaGame: ", TOKENS.amaGame);
@@ -140,7 +141,7 @@ async function main() {
         const limit = 125;
         const st = start * limit;
         await initSaruData(self.meta, start * limit, ++start * limit);
-        if (!IS_TEST) {
+        if (!IS_TESTNET) {
             await initSaruData(self.meta, start * limit, ++start * limit);
             await initSaruData(self.meta, start * limit, ++start * limit);
             await initSaruData(self.meta, start * limit, ++start * limit);
@@ -155,7 +156,7 @@ async function main() {
 
     let start = 0;
     start = await initSaru(start);
-    if (!IS_TEST) {
+    if (!IS_TESTNET) {
         start = await initSaru(start);
         start = await initSaru(start);
         start = await initSaru(start);
@@ -189,7 +190,7 @@ async function main() {
     log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
 
     writeWithToken(TOKENS, __filename, 1, "json");
-    if (IS_TEST) {
+    if (IS_TESTNET) {
         await mainTest({
             ACC: {alex, bob, wFounder, deployer},
             TOKENS,

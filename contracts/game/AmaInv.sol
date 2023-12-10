@@ -24,9 +24,9 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
     IEcoGame private eco;
     address public miningKuni;
 
-    constructor(address miningAddr, address _eco) {
-        eco = IEcoGame(_eco);
-        miningKuni = miningAddr;
+    constructor(address miningAddr_, address eco_) {
+        eco = IEcoGame(eco_);
+        miningKuni = miningAddr_;
     }
 
     function createKuniItem() external onlyOwner {

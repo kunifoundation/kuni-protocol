@@ -51,8 +51,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     uint256 public getGenesisTime;
 
     constructor(
-        uint256 _genesisTime,
-        address miningAddr,
+        uint256 genesisTime_,
+        address miningAddr_,
         address kuniSaru_,
         address kuniItem_,
         address eco_,
@@ -64,8 +64,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         eco = IEcoGame(eco_);
         scholar = IScholarship(scholar_);
         referral = refer;
-        getGenesisTime = _genesisTime;
-        miningKuni = miningAddr;
+        getGenesisTime = genesisTime_;
+        miningKuni = miningAddr_;
     }
 
     function deposit(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
