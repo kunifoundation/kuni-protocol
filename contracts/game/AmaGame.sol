@@ -57,13 +57,13 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         address kuniItem_,
         address eco_,
         address scholar_,
-        address refer
+        address referral_
     ) {
         kuniSaru = kuniSaru_;
         kuniItem = kuniItem_;
         eco = IEcoGame(eco_);
         scholar = IScholarship(scholar_);
-        referral = refer;
+        referral = referral_;
         getGenesisTime = genesisTime_;
         miningKuni = miningAddr_;
     }
@@ -96,7 +96,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
         // Update value
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            require(_materials[inx] != address(0x0), "KUNI: Material not yet initialized");
             _mDeposit(_materials[inx], msg.sender, mValues[inx] + kuniAmount, multipliers[inx]);
         }
     }
@@ -126,7 +125,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     function claim() external override nonReentrant {
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
             _mClaim(_materials[inx]);
         }
     }
@@ -157,7 +155,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
         uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
             uint256 _amount = mValues[inx].add(kuniAmount).mul(multipliers[inx]).div(MAGIC_NUM);
             _mWithdraw(_materials[inx], _amount);
         }
@@ -165,7 +162,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     function withdraw() external override nonReentrant {
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            require(_materials[inx] != address(0x0), "KUNI: Material is not initial");
             UserInfo storage user = userInfo[_materials[inx]][msg.sender];
             _mWithdraw(_materials[inx], user.amount);
         }
@@ -187,6 +183,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     ) external override nonReentrant onlyStart {
         IMiningKuni(miningKuni).gasStart();
         require(itemIds.length <= tokenIds.length && tokenIds.length <= MAX_SARU, "KUNI: Unable to process request");
+        _saruDuplicate(tokenIds);
         _invalidSaru(tokenIds, msg.sender);
         _invalidKuniItem(itemIds, msg.sender);
         _fighting(tokenIds, itemIds);
@@ -194,18 +191,20 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
 
     function claimGE() external override nonReentrant {
-        _claimGE(msg.sender);
+        uint256 amount = unclaimedGE[msg.sender];
+        if (amount > 0) {
+            IMaterial(ge).mint(msg.sender, amount);
+            unclaimedGE[msg.sender] = 0;
+        }
+        emit ClaimGE(msg.sender, amount);
     }
 
     function earnKuni() external nonReentrant {
         _earnKuni(msg.sender);
-        if (foundation != address(0x0)) {
-            _earnKuni(foundation);
-        }
+        _earnKuni(foundation);
     }
 
     function _earnKuni(address sender) internal {
-        if (ge == address(0x0)) return;
         uint256 amount = unclaimedGE[sender];
         if (amount > 0) {
             IMiningKuni(miningKuni).mineKuniFrom(sender, ge, amount);
@@ -213,16 +212,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             emit EarnKuni(sender, amount);
             unclaimedGE[sender] = 0;
         }
-    }
-
-    function _claimGE(address sender) internal {
-        if (ge == address(0x0)) return;
-        uint256 amount = unclaimedGE[sender];
-        if (amount > 0) {
-            IMaterial(ge).mint(sender, amount);
-            unclaimedGE[sender] = 0;
-        }
-        emit ClaimGE(sender, amount);
     }
 
     function _fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds) internal {
@@ -261,13 +250,11 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256[][] calldata itemIds,
         uint256 totalItem
     ) internal returns (uint256) {
-        if (referral != address(0x0)) {
-            address refOwner;
-            uint256 refReward;
-            (reward, refReward, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
-            if (refOwner != address(0x0) && refReward > 0) {
-                unclaimedGE[refOwner] += refReward;
-            }
+        address refOwner;
+        uint256 refReward;
+        (reward, refReward, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
+        if (refOwner != address(0x0) && refReward > 0) {
+            unclaimedGE[refOwner] += refReward;
         }
 
         uint256 myReward = reward;
@@ -299,7 +286,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     function _saruDuplicate(uint256[] calldata tokenIds) internal pure returns (bool) {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                if (tokenIds[i] == tokenIds[j]) return false;
+                require(tokenIds[i] != tokenIds[j], "KUNI: Unable to process request");
             }
         }
         return true;
