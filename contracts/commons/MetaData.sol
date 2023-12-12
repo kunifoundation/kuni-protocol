@@ -106,19 +106,14 @@ contract MetaData is Ownable, IMetaData {
         efficiency = _efficiencyTokenId(tokenId, efficiency);
     }
 
-    function getEfficiencyTokenIds(
-        uint256[] memory tokenIds
-    ) external view override returns (KuniEfficiency memory efficiency) {
+    function getEfficiencyTokenIds(uint256[] memory tokenIds) external view override returns (KuniEfficiency memory efficiency) {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
             efficiency = _efficiencyTokenId(tokenIds[inx], efficiency);
         }
     }
 
     // ore, stone, wood, fiber
-    function _efficiencyTokenId(
-        uint256 tokenId,
-        KuniEfficiency memory efficiency
-    ) internal view returns (KuniEfficiency memory) {
+    function _efficiencyTokenId(uint256 tokenId, KuniEfficiency memory efficiency) internal view returns (KuniEfficiency memory) {
         uint256[] memory props = sarus[tokenId];
         for (uint256 inx = 0; inx < props.length; inx++) {
             KuniEfficiency memory tmp = efficiencies[props[inx]];
@@ -130,9 +125,7 @@ contract MetaData is Ownable, IMetaData {
         return efficiency;
     }
 
-    function getPowerAllTokenId(
-        uint256 tokenId
-    ) external view override returns (NFTPartProp memory power, uint256 total) {
+    function getPowerAllTokenId(uint256 tokenId) external view override returns (NFTPartProp memory power, uint256 total) {
         uint256[] memory props = sarus[tokenId];
         for (uint256 j = 0; j < props.length; j++) {
             NFTPartProp memory tmp = powers[props[j]];

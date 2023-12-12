@@ -56,10 +56,7 @@ contract Referral is IReferral, Ownable {
     }
 
     function createCode(string calldata code, uint256 rate) external {
-        require(
-            keccak256(abi.encodePacked(userRefCode[msg.sender])) != keccak256(abi.encodePacked("")),
-            "KUNI: APPLY_A_CODE"
-        );
+        require(keccak256(abi.encodePacked(userRefCode[msg.sender])) != keccak256(abi.encodePacked("")), "KUNI: APPLY_A_CODE");
         _createCode(msg.sender, code, rate);
         emit CodeCreated(msg.sender, code, rate);
     }

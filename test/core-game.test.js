@@ -91,7 +91,25 @@ describe("------------- Staking token ------------------", () => {
         this.cotton = await (await ethers.deployContract("Material", ["Cotton", "COTTON"])).waitForDeployment();
         this.lumber = await (await ethers.deployContract("Material", ["Lumber", "LUMBER"])).waitForDeployment();
 
-        this.inv = await (await ethers.deployContract("AmaInv", [await this.mining.getAddress(), await this.eco.getAddress()])).waitForDeployment();
+
+        this.ge = await (await ethers.deployContract("GreenEnergy")).waitForDeployment();
+        
+        this.geAddr = await this.ge.getAddress();
+        
+
+        this.mTokens = {
+            ore: await this.ore.getAddress(),
+            stone: await this.stone.getAddress(),
+            cotton: await this.cotton.getAddress(),
+            lumber: await this.lumber.getAddress(),
+        };
+        this.mTokenArr = _.values(this.mTokens);
+
+        this.inv = await (await ethers.deployContract("AmaInv", [
+            await this.mining.getAddress(), 
+            await this.eco.getAddress(), 
+            await this.item.getAddress()
+        ])).waitForDeployment();
 
         this.game = await (
             await deployContract("AmaGame", [
@@ -102,32 +120,17 @@ describe("------------- Staking token ------------------", () => {
                 await this.eco.getAddress(),
                 await this.scholar.getAddress(),
                 await this.referal.getAddress(),
+                this.geAddr,
+                founder.address
             ])
         ).waitForDeployment();
-
-        this.ge = await (await ethers.deployContract("GreenEnergy")).waitForDeployment();
-        this.geAddr = await this.ge.getAddress();
         this.gameAddr = await this.game.getAddress();
-
-        this.mTokens = {
-            ore: await this.ore.getAddress(),
-            stone: await this.stone.getAddress(),
-            cotton: await this.cotton.getAddress(),
-            lumber: await this.lumber.getAddress(),
-        };
-
-        this.mTokenArr = _.values(this.mTokens);
 
         await (await this.ore.setMinter(this.gameAddr)).wait();
         await (await this.stone.setMinter(this.gameAddr)).wait();
         await (await this.cotton.setMinter(this.gameAddr)).wait();
         await (await this.lumber.setMinter(this.gameAddr)).wait();
-
         await (await this.ge.setMinter(this.gameAddr)).wait();
-
-        await (await this.game.setGE(this.geAddr)).wait();
-        await (await this.game.setMining(await this.mining.getAddress())).wait();
-        await (await this.game.setFoundation(founder.address)).wait();
 
         expect(await this.game.materialAt(0)).to.be.eq(ZeroAddress);
         expect(await this.game.materialAt(1)).to.be.eq(ZeroAddress);
@@ -178,6 +181,7 @@ describe("------------- Staking token ------------------", () => {
         log("balance: ", ethers.formatEther(balance - (await deployer.provider.getBalance(await deployer.getAddress()))));
         await cMintNft(this.saru, bob.address, 5);
         await cMintNft(this.saru, alex.address, 5);
+        await cMintNft(this.saru, bob.address, 2);
 
         await (await this.referal.connect(bob).applyCode("AMAKUNI")).wait();
         this.kuni = this.mining;
@@ -201,7 +205,7 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("02. Check Saru balance of the Bob", async function () {
-        await checkApproved(this, 5, bob);
+        await checkApproved(this, 7, bob);
         await checkApproved(this, 5, alex);
     });
 
@@ -235,7 +239,13 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("05. fighting....", async function () {
-        await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith("KUNI: Your not is owner");
+        await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith("KUNI: You are not the owner");
+        await expect(this.game.connect(bob).fighting([1, 2, 2], [])).to.be.revertedWith("KUNI: Saru Duplicated!");
+        // await expect(this.game.connect(bob).fighting([1, 2, 3], [
+        //     [1,2,3,4,5],
+        //     [0,7,8,9,10],
+        //     [1,12,13,14,15]
+        // ])).to.be.revertedWith("KUNI: Item Duplicated!");
         tx = await this.game.connect(bob).fighting([1], [[0, 0, 0, 0, 0]]);
         await tx.wait();
         tx = await this.game.connect(bob).fighting([1, 2], []);
@@ -287,7 +297,7 @@ describe("------------- Staking token ------------------", () => {
         log("KUNI ALEX", (await this.mining.balanceOf(alex.address)) / e1);
     });
 
-    it("07. deposit", async function () {
+    it("06. deposit", async function () {
         log("kuni", (await this.mining.balanceOf(bob.address)) / p16);
         await approveToken(this.mining, bob, this.gameAddr);
         log("block 1: ", await ethers.provider.getBlockNumber());
@@ -314,69 +324,7 @@ describe("------------- Staking token ------------------", () => {
         // await sleep(500)
     });
 
-    // it("06. Game Inv Craft", async function() {
-    //   // const inv = await (await deployContract('AmaInv', [  await this.eco.getAddress() ])).waitForDeployment();
-
-    //   const invAddr = await this.inv.getAddress()
-
-    //   log('fouder', (await this.ge.balanceOf(founder.address))/e1)
-
-    //   tx = await this.item.setMinter(invAddr)
-    //   await tx.wait()
-    //   // console.log('address', invAddr);
-    //   logMaterials(this, bob)
-    // tx = await (await this.inv.setMaterialPic(this.mTokenArr, [1,2,3,4])).wait()
-    //   await tx.wait()
-    //   await approveToken(this.ore, bob, invAddr)
-    //   await approveToken(this.stone, bob, invAddr)
-    //   await approveToken(this.cotton, bob, invAddr)
-    //   await approveToken(this.lumber, bob, invAddr)
-    //   tx = await this.inv.connect(bob).craft(this.mTokenArr, ['1.2',1,1,2,1].map(t => parseEther(`${t}`)), 1)
-    //   await tx.wait()
-    //   log(await this.item.balanceOf(bob.address))
-    //   log(await this.inv.currentCapOf(bob.address))
-    // })
-
-    // it('06. claim GE', async function() {
-    //   // tx = await this.fWallet.emergencyWithdraw(await this.ge.getAddress(), axi.address)
-    //   // await tx.wait()
-    //   // log('axi', (await this.ge.balanceOf(axi.address))/e1)
-
-    //   log('founder', (await this.ge.balanceOf(founder.address))/e1)
-    //   await this.fWallet.setSpender(axi.address);
-    //   await tx.wait()
-
-    //   tx = await this.fWallet.connect(axi).mineKuni(await this.mining.getAddress(), await this.ge.getAddress())
-    //   await tx.wait()
-
-    //   expect(0).to.be.eq(await this.ge.balanceOf(founder.address))
-
-    //   expect(0).to.be.eq(await this.mining.balanceOf(founder.address))
-    //   tx = await this.fWallet.claimKuni(await this.mining.getAddress(), await this.ge.getAddress())
-    //   await tx.wait()
-    //   log((await this.mining.balanceOf(founder.address))/e1)
-
-    //   tx = await this.fWallet.emergencyWithdraw(await this.mining.getAddress(), axi.address)
-    //   await tx.wait()
-    //   log('axi', (await this.mining.balanceOf(axi.address))/e1)
-    //   expect(0).to.be.eq(await this.mining.balanceOf(founder.address))
-    // })
-
-    // it('07. check founder wallet', async function() {
-    //   const fAddr = founder.address
-    //   // log(()/e1)
-    //   expect(0).to.be.eq(await ethers.provider.getBalance(fAddr))
-    //   tx = await deployer.sendTransaction({from: deployer.address, to: fAddr, value: e1})
-    //   await tx.wait()
-    //   expect(e1).to.be.eq(await ethers.provider.getBalance(fAddr))
-    //   tx = await this.fWallet.emergencyWithdraw(ZeroAddress, axi.address)
-    //   await tx.wait()
-    //   expect(0).to.be.eq(await ethers.provider.getBalance(fAddr))
-
-    //   await expect(this.fWallet.connect(axi).emergencyWithdraw(ZeroAddress, axi.address)).revertedWith('Ownable: caller is not the owner')
-    // })
-
-    it("08. craft item", async function () {
+    it("07. craft item", async function () {
         await mine(1000);
         await (await this.game.connect(bob).withdraw()).wait();
         const invAddr = await this.inv.getAddress();
@@ -417,6 +365,12 @@ describe("------------- Staking token ------------------", () => {
         await fnCraft(bob, ["stone", "lumber"], [5, 2], 1);
         await fnCraft(bob, ["cotton", "lumber"], [5, 2], 1);
 
+
+        await fnCraft(bob, ["ore"], [2], 0);
+        await fnCraft(bob, ["stone"], [2], 0);
+        await fnCraft(bob, ["cotton"], [6], 0);
+        await fnCraft(bob, ["lumber"], [4], 0);
+
         log(await this.item.lastTokenIdOf(1));
         log(await this.item.lastTokenIdOf(2));
         log(await this.item.lastTokenIdOf(3));
@@ -442,7 +396,7 @@ describe("------------- Staking token ------------------", () => {
         // await sleep(10000)
     });
 
-    it('09. check pending', async function(){
+    it('08. Check pending', async function(){
         const self = this
         await (await this.game.connect(bob).deposit(e50, [2, 3, 4, 5])).wait()
         await mine(500)
@@ -475,5 +429,25 @@ describe("------------- Staking token ------------------", () => {
         await checkMaterialPending(alex, "Alex", [6])
         await checkMaterialPending(bob, "Bob")
         await checkMaterialPending(alex, "Alex")
+    })
+
+    it('09. Input fighting SARU & ITEM', async function() {
+        await expect(this.game.connect(bob).fighting([1, 2, 2], [])).to.be.revertedWith("KUNI: Saru Duplicated!");
+        await expect(this.game.connect(bob).fighting([1, 2, 3, 4, 5, 11, 12], [])).to.be.revertedWith("KUNI: Unable to process request");
+        await expect(this.game.connect(bob).fighting([1, 2, 3], [
+            [1,2,3,4,5],
+            [6,7,0,4,10],
+            [1,12,3,14,15]
+        ])).revertedWith("KUNI: Item Duplicated!")
+
+        await expect(this.game.connect(bob).fighting([1, 2, 3], [
+            [1,2,3,4,5],
+            [0,2,0,0,0],
+            [0,0,0,0,0]
+        ])).revertedWith("KUNI: Item Duplicated!")
+
+        await (await this.game.connect(bob).fighting([1, 2, 3], [
+            [1,2,0,4,5]
+        ])).wait()
     })
 });

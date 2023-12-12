@@ -49,8 +49,4 @@ describe("------------- Staking token ------------------", () => {
         const aTeam = await this.eco.productionEfficiencyTeam([1, 2]);
         exData(exTeam, aTeam, 2);
     });
-
-    it("01. thuandv", async function () {
-        log("land ", await this.eco.getLandArr(bob.address));
-    });
 });

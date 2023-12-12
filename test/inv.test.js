@@ -94,7 +94,14 @@ describe("------------- Staking token ------------------", () => {
         this.stone = await (await ethers.deployContract("Material", ["Stone", "STONE"])).waitForDeployment();
         this.cotton = await (await ethers.deployContract("Material", ["Cotton", "COTTON"])).waitForDeployment();
         this.lumber = await (await ethers.deployContract("Material", ["Lumber", "LUMBER"])).waitForDeployment();
-        this.inv = await (await ethers.deployContract("AmaInv", [await this.mining.getAddress(), await this.eco.getAddress()])).waitForDeployment();
+        this.ge = await (await ethers.deployContract("GreenEnergy")).waitForDeployment();
+        this.geAddr = await this.ge.getAddress();
+
+        this.inv = await (await ethers.deployContract("AmaInv", [
+            await this.mining.getAddress(), 
+            await this.eco.getAddress(),
+            await this.item.getAddress(),
+        ])).waitForDeployment();
 
         this.game = await (
             await deployContract("AmaGame", [
@@ -105,11 +112,11 @@ describe("------------- Staking token ------------------", () => {
                 await this.eco.getAddress(),
                 await this.scholar.getAddress(),
                 await this.referal.getAddress(),
+                this.geAddr,
+                founder.address
             ])
         ).waitForDeployment();
 
-        this.ge = await (await ethers.deployContract("GreenEnergy")).waitForDeployment();
-        this.geAddr = await this.ge.getAddress();
         this.gameAddr = await this.game.getAddress();
 
         this.mTokens = {
@@ -129,10 +136,6 @@ describe("------------- Staking token ------------------", () => {
 
         await (await this.ge.setMinter(this.gameAddr)).wait();
 
-        await (await this.game.setGE(this.geAddr)).wait();
-        await (await this.game.setMining(await this.mining.getAddress())).wait();
-        await (await this.game.setFoundation(founder.address)).wait();
-
         expect(await this.game.materialAt(0)).to.be.eq(ZeroAddress);
         expect(await this.game.materialAt(1)).to.be.eq(ZeroAddress);
         expect(await this.game.materialAt(2)).to.be.eq(ZeroAddress);
@@ -145,7 +148,6 @@ describe("------------- Staking token ------------------", () => {
         await (await this.mining.addCoreGame(await this.game.getAddress())).wait();
 
         await (await this.inv.setMaterialPic(this.mTokenArr, [1, 2, 3, 4])).wait();
-        await (await this.inv.setKuniItem(await this.item.getAddress())).wait();
         await (await this.item.setMinter(await this.inv.getAddress())).wait();
 
         await initPowerEffData(this.meta);
@@ -221,7 +223,7 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("05. fighting....", async function () {
-        await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith("KUNI: Your not is owner");
+        await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith("KUNI: You are not the owner");
         tx = await this.game.connect(bob).fighting([1], [[0, 0, 0, 0, 0]]);
         await tx.wait();
         tx = await this.game.connect(bob).fighting([1, 2], []);

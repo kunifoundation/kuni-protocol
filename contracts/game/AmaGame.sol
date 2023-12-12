@@ -57,7 +57,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         address kuniItem_,
         address eco_,
         address scholar_,
-        address referral_
+        address referral_,
+        address ge_,
+        address foundation_
     ) {
         kuniSaru = kuniSaru_;
         kuniItem = kuniItem_;
@@ -66,37 +68,42 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         referral = referral_;
         getGenesisTime = genesisTime_;
         miningKuni = miningAddr_;
+        ge = ge_;
+        foundation = foundation_;
     }
 
     function deposit(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
-        uint256[] memory mValues = new uint256[](4);
-        uint256[] memory eff = new uint256[](4);
-        // Update old data
-        if (kuniAmount > 0) {
-            // call
-            eff = _calProductivityTeam(kuniAmount, _nftSaru[msg.sender].values());
-            for (uint256 index = 0; index < eff.length; index++) {
-                mValues[index] = mValues[index].add(eff[index]);
-            }
-            // kuni staked
-            IERC20(miningKuni).transferFrom(msg.sender, address(this), kuniAmount);
-            kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].add(kuniAmount);
-        }
+        uint256[] memory effTeam = new uint256[](4);
 
         if (tokenIds.length > 0) {
-            eff = _calProductivityTeam(kuniStakedOf[msg.sender], tokenIds);
-            for (uint256 index = 0; index < eff.length; index++) {
-                mValues[index] = mValues[index].add(eff[index]);
-            }
-
             for (uint256 index = 0; index < tokenIds.length; index++) {
                 _transfer(msg.sender, address(this), tokenIds[index]);
             }
         }
+
+        if (kuniAmount > 0) {
+            IERC20(miningKuni).transferFrom(msg.sender, address(this), kuniAmount);
+            kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].add(kuniAmount);
+        }
+        // call
+        effTeam = _calProductivityTeam(kuniStakedOf[msg.sender], _nftSaru[msg.sender].values());
         uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
-        // Update value
+
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            _mDeposit(_materials[inx], msg.sender, mValues[inx] + kuniAmount, multipliers[inx]);
+            uint256 _amount = effTeam[inx].add(kuniStakedOf[msg.sender]).mul(multipliers[inx]).div(MAGIC_NUM);
+            _mUpdateAmount(_materials[inx], _amount);
+        }
+    }
+
+    function _mUpdateAmount(address mToken, uint256 amount) internal {
+        PoolInfo storage pool = pools[mToken];
+        UserInfo storage user = userInfo[mToken][msg.sender];
+        if (amount > 0) {
+            _mUpdatePool(mToken);
+            _harvest(mToken, user);
+            pool.supply = pool.supply.sub(user.amount).add(amount);
+            user.amount = amount;
+            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
         }
     }
 
@@ -131,41 +138,33 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     function withdrawTokens(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
         require(kuniAmount <= kuniStakedOf[msg.sender], "KUNI: Exceeded!");
-        uint256[] memory mValues = new uint256[](4);
-        uint256[] memory calValues = new uint256[](4);
-
         if (tokenIds.length > 0) {
             // saru withdraw
-            mValues = _calProductivityTeam(kuniStakedOf[msg.sender], tokenIds);
             for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-                require(msg.sender == _nftOwner[tokenIds[inx]], "KUNI: Your is not owner");
+                require(msg.sender == _nftOwner[tokenIds[inx]], "KUNI: You are not the owner");
                 _transfer(address(this), msg.sender, tokenIds[inx]);
             }
         }
 
         if (kuniAmount > 0) {
-            // nft staked
-            calValues = _calProductivityTeam(kuniAmount, _nftSaru[msg.sender].values());
-            for (uint256 index = 0; index < calValues.length; index++) {
-                mValues[index] = mValues[index].add(calValues[index]);
-            }
+            // transfer $kuni
             _transferToken(miningKuni, kuniAmount);
             kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].sub(kuniAmount);
         }
 
         uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
+        uint256[] memory mValues = _calProductivityTeam(kuniStakedOf[msg.sender], _nftSaru[msg.sender].values());
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            uint256 _amount = mValues[inx].add(kuniAmount).mul(multipliers[inx]).div(MAGIC_NUM);
-            _mWithdraw(_materials[inx], _amount);
+            UserInfo storage user = userInfo[_materials[inx]][msg.sender];
+            uint256 amount = mValues[inx].add(kuniStakedOf[msg.sender]).mul(multipliers[inx]).div(MAGIC_NUM);
+            _mUpdateAmount(_materials[inx], amount);
+            // transfer material
+            _transferToken(_materials[inx], user.pendingReward);
+            user.pendingReward = 0;
         }
     }
 
     function withdraw() external override nonReentrant {
-        for (uint256 inx = 0; inx < _materials.length; inx++) {
-            UserInfo storage user = userInfo[_materials[inx]][msg.sender];
-            _mWithdraw(_materials[inx], user.amount);
-        }
-
         // widthraw saru staked
         for (uint256 inx = _nftSaru[msg.sender].length(); inx > 0; inx--) {
             _transfer(address(this), msg.sender, _nftSaru[msg.sender].at(inx - 1));
@@ -175,17 +174,28 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             _transferToken(miningKuni, kuniStakedOf[msg.sender]);
             kuniStakedOf[msg.sender] = 0;
         }
+
+        for (uint256 inx = 0; inx < _materials.length; inx++) {
+            UserInfo storage user = userInfo[_materials[inx]][msg.sender];
+            PoolInfo storage pool = pools[_materials[inx]];
+            if (user.amount > 0) {
+                _mUpdatePool(_materials[inx]);
+                _harvest(_materials[inx], user);
+                _transferToken(_materials[inx], user.pendingReward);
+                pool.supply = pool.supply.sub(user.amount);
+                user.amount = 0;
+                user.rewardDebt = 0;
+                user.pendingReward = 0;
+            }
+        }
     }
 
     function fighting(
         uint256[] calldata tokenIds,
         uint256[][] calldata itemIds
-    ) external override nonReentrant onlyStart {
+    ) external override nonReentrant onlyStart _invalidSaru(tokenIds) _invalidKuniItem(itemIds) {
         IMiningKuni(miningKuni).gasStart();
         require(itemIds.length <= tokenIds.length && tokenIds.length <= MAX_SARU, "KUNI: Unable to process request");
-        _saruDuplicate(tokenIds);
-        _invalidSaru(tokenIds, msg.sender);
-        _invalidKuniItem(itemIds, msg.sender);
         _fighting(tokenIds, itemIds);
         IMiningKuni(miningKuni).gasEnd();
     }
@@ -197,6 +207,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             unclaimedGE[msg.sender] = 0;
         }
         emit ClaimGE(msg.sender, amount);
+        _earnKuni(foundation);
     }
 
     function earnKuni() external nonReentrant {
@@ -236,10 +247,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256 myReward = _shareReward(reward, tokenIds, itemIds, totalItem);
         unclaimedGE[msg.sender] += myReward;
         emit Fighting(msg.sender, tokenIds, itemIds, myReward, niohPower, won);
-        _updateBattleBonus();
-    }
-
-    function _updateBattleBonus() internal {
         (uint256 bonus, ) = eco.battleBonusInc(_battleBonus[msg.sender]);
         _battleBonus[msg.sender] = bonus;
     }
@@ -283,67 +290,52 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         return myReward;
     }
 
-    function _saruDuplicate(uint256[] calldata tokenIds) internal pure returns (bool) {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            for (uint256 j = i + 1; j < tokenIds.length; j++) {
-                require(tokenIds[i] != tokenIds[j], "KUNI: Unable to process request");
-            }
-        }
-        return true;
-    }
-
-    function _invalidSaru(uint256[] calldata tokenIds, address sender) internal view returns (bool) {
+    modifier _invalidSaru(uint256[] calldata tokenIds) {
         for (uint256 index = 0; index < tokenIds.length; index++) {
+            for (uint256 j = index + 1; j < tokenIds.length; j++) {
+                require(tokenIds[index] != tokenIds[j], "KUNI: Saru Duplicated!");
+            }
             uint256 tokenId = tokenIds[index];
             address sOwner;
             (sOwner, ) = scholar.ownerInfo(kuniSaru, tokenId);
             require(
-                IERC721(kuniSaru).ownerOf(tokenId) == sender || _nftOwner[tokenId] == sender || sOwner != address(0x0),
-                "KUNI: Your not is owner"
+                IERC721(kuniSaru).ownerOf(tokenId) == msg.sender || _nftOwner[tokenId] == msg.sender || sOwner != address(0x0),
+                "KUNI: You are not the owner"
             );
         }
-        return true;
+        _;
     }
 
-    function _invalidKuniItem(uint256[][] calldata itemIds, address sender) internal view returns (bool) {
+    modifier _invalidKuniItem(uint256[][] calldata itemIds) {
         uint256 len = itemIds.length;
-        if (len != 0) {
-            uint256 slash;
-            uint256 heavy;
-            uint256 strike;
-            uint256 tech;
-            uint256 magic;
-            for (uint256 i = 0; i < len; i++) {
-                require(itemIds[i].length == 5, "KUNI: Unable to process request");
-                slash = _equipmentCorrect(sender, itemIds[i][0], 1, slash);
-                heavy = _equipmentCorrect(sender, itemIds[i][1], 2, heavy);
-                strike = _equipmentCorrect(sender, itemIds[i][2], 3, strike);
-                tech = _equipmentCorrect(sender, itemIds[i][3], 4, tech);
-                magic = _equipmentCorrect(sender, itemIds[i][4], 5, magic);
+        for (uint256 i = 0; i < len; i++) {
+            require(itemIds[i].length == 5, "KUNI: Unable to process request");
+            _equipmentCorrect(msg.sender, itemIds[i][0], 1);
+            _equipmentCorrect(msg.sender, itemIds[i][1], 2);
+            _equipmentCorrect(msg.sender, itemIds[i][2], 3);
+            _equipmentCorrect(msg.sender, itemIds[i][3], 4);
+            _equipmentCorrect(msg.sender, itemIds[i][4], 5);
+            // kiem tra trung item
+
+            for (uint256 j = i + 1; j < len; j++) {
+                require(itemIds[i][0] != itemIds[j][0] || itemIds[j][0] == 0, "KUNI: Item Duplicated!");
+                require(itemIds[i][1] != itemIds[j][1] || itemIds[j][1] == 0, "KUNI: Item Duplicated!");
+                require(itemIds[i][2] != itemIds[j][2] || itemIds[j][2] == 0, "KUNI: Item Duplicated!");
+                require(itemIds[i][3] != itemIds[j][3] || itemIds[j][3] == 0, "KUNI: Item Duplicated!");
+                require(itemIds[i][4] != itemIds[j][4] || itemIds[j][4] == 0, "KUNI: Item Duplicated!");
             }
         }
-        return true;
+        _;
     }
 
-    function _equipmentCorrect(
-        address owner,
-        uint256 tokenId,
-        uint256 cat,
-        uint256 item
-    ) internal view returns (uint256) {
+    function _equipmentCorrect(address owner, uint256 tokenId, uint256 cat) internal view {
         if (tokenId > 0) {
             address sOwner;
             (sOwner, ) = scholar.ownerInfo(kuniItem, tokenId);
-            require(IERC721(kuniItem).ownerOf(tokenId) == owner || sOwner != address(0x0), "KUNI: Your not is owner");
+            require(IERC721(kuniItem).ownerOf(tokenId) == owner || sOwner != address(0x0), "KUNI: You are not the owner");
             uint256 _cat = tokenId % 5 == 0 ? 5 : tokenId % 5;
             require(_cat == cat, "KUNI: Unable to process request");
-            if (item == 0) {
-                item = tokenId;
-            } else {
-                require(item != tokenId, "KUNI: Unable to process request");
-            }
         }
-        return item;
     }
 
     // Saru staked Info
@@ -415,34 +407,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
     }
 
-    function _mDeposit(address mToken, address sender, uint256 amount, uint256 multiplier) internal {
-        amount = amount.mul(multiplier).div(MAGIC_NUM);
-        PoolInfo storage pool = pools[mToken];
-        if (amount > 0) {
-            UserInfo storage user = userInfo[mToken][sender];
-            _mUpdatePool(mToken);
-            _harvest(mToken, user);
-            user.amount = user.amount.add(amount);
-            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-            pool.supply = pool.supply.add(amount);
-        }
-    }
-
-    function _mWithdraw(address mToken, uint256 amount) internal {
-        UserInfo storage user = userInfo[mToken][msg.sender];
-        PoolInfo storage pool = pools[mToken];
-        if (amount > 0 && amount <= user.amount) {
-            _mUpdatePool(mToken);
-            _harvest(mToken, user);
-            uint256 mAmount = amount.mul(user.pendingReward).div(user.amount);
-            user.pendingReward = user.pendingReward.sub(mAmount);
-            _transferToken(mToken, mAmount);
-            user.amount = user.amount.sub(amount);
-            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-            pool.supply = pool.supply.sub(amount);
-        }
-    }
-
     function _mClaim(address mToken) internal {
         UserInfo storage user = userInfo[mToken][msg.sender];
         if (user.amount > 0) {
@@ -512,35 +476,11 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         IERC20(mToken).transfer(msg.sender, amount);
     }
 
-    function setMining(address mining_) external onlyOwner {
-        miningKuni = mining_;
-    }
-
-    function setGE(address ge_) external onlyOwner {
-        ge = ge_;
-    }
-
-    function setFoundation(address addr) external onlyOwner {
-        foundation = addr;
-    }
-
-    function setItem(address addr) external onlyOwner {
-        kuniItem = addr;
-    }
-
     function setEco(address addr) external onlyOwner {
         eco = IEcoGame(addr);
     }
 
-    function setReferral(address addr) external onlyOwner {
-        referral = addr;
-    }
-
-    function setScholar(address addr) external onlyOwner {
-        scholar = IScholarship(addr);
-    }
-
-    // ore, stone, cotton, lumber
+    // // ore, stone, cotton, lumber
     function setMaterials(address[] calldata tokens) external onlyOwner {
         for (uint256 i = 0; i < tokens.length; i++) {
             _materials[i] = tokens[i];

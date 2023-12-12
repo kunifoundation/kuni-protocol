@@ -19,25 +19,24 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
 
     mapping(address => uint256) public materialPic;
     mapping(address => uint256) public currentCap;
+    uint256 CAP_INIT = 10;
+    uint256 STEP = 1;
 
     address public kuniItem;
     IEcoGame private eco;
     address public miningKuni;
 
-    constructor(address miningAddr_, address eco_) {
+    constructor(address miningAddr_, address eco_, address kuniItem_) {
         eco = IEcoGame(eco_);
         miningKuni = miningAddr_;
+        kuniItem = kuniItem_;
     }
 
     function createKuniItem() external onlyOwner {
         kuniItem = address(new KuniItem());
     }
 
-    function craft(
-        address[] calldata _materials,
-        uint256[] calldata amounts,
-        uint8 cType
-    ) external override nonReentrant {
+    function craft(address[] calldata _materials, uint256[] calldata amounts, uint8 cType) external override nonReentrant {
         _craft(_materials, amounts, cType);
     }
 
@@ -56,10 +55,7 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
             }
         }
         uint256 cap = _currentCapOf(msg.sender);
-        require(
-            total > 0 && total <= cap.mul(1e18),
-            "KUNI: Materials Limit reached. Please reduce the number of materials"
-        );
+        require(total > 0 && total <= cap.mul(1e18), "KUNI: Materials Limit reached. Please reduce the number of materials");
         // slash; heavy; strike; tech; magic;
         uint256[] memory _stats = eco.materialStasBatch(pic, amounts);
         uint256[] memory stats = new uint256[](6); // = [slash, heavy, strike, tech, magic, type];
@@ -74,13 +70,13 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
         require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "KUNI: NAME_EMPTY");
         IERC721Mint(kuniItem).safeMint(msg.sender, name, stats);
         uint256 tokenId = IERC721Mint(kuniItem).currentId(cat);
-        currentCap[msg.sender] = cap + 1;
+        currentCap[msg.sender] = cap + STEP;
         emit Craft(msg.sender, tokenId);
         IMiningKuni(miningKuni).gasEnd();
     }
 
     function _currentCapOf(address acc) internal view returns (uint256) {
-        return currentCap[acc] == 0 ? 10 : currentCap[acc];
+        return currentCap[acc] == 0 ? CAP_INIT : currentCap[acc];
     }
 
     function setMaterialPic(address[] calldata materialAddr, uint256[] calldata pic) external onlyOwner {

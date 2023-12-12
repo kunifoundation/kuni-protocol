@@ -199,9 +199,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
                 uint256 geSupply = IERC20(_ge).balanceOf(address(this));
                 uint256 estimateRewardPool = getPoolReward(_ge);
                 uint256 shareRewardPending = pool.rewardPerShare.add(estimateRewardPool.mul(MAGIC_NUM).div(geSupply));
-                pendingAmount =
-                    pendingAmount +
-                    (user.amount.mul(shareRewardPending).div(MAGIC_NUM)).sub(user.rewardDebt);
+                pendingAmount = pendingAmount + (user.amount.mul(shareRewardPending).div(MAGIC_NUM)).sub(user.rewardDebt);
             }
             return pendingAmount;
         }

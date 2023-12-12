@@ -37,13 +37,11 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
         emit Cancel(nftAddr, msg.sender, tokenId);
     }
 
-    function askBatch(
-        address nftAddr,
-        uint256[] calldata tokenIds,
-        uint256[] calldata arrRate
-    ) external override nonReentrant {
+    function askBatch(address nftAddr, uint256[] calldata tokenIds, uint256[] calldata arrRate) external override nonReentrant {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-            if (!_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) _ask(nftAddr, tokenIds[inx], arrRate[inx]);
+            if (!_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) {
+                _ask(nftAddr, tokenIds[inx], arrRate[inx]);
+            }
         }
 
         emit AskBatch(msg.sender, nftAddr, tokenIds, arrRate);
@@ -51,7 +49,9 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
 
     function cancelBatch(address nftAddr, uint256[] calldata tokenIds) external override nonReentrant {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-            if (_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) _deleteToken(nftAddr, tokenIds[inx]);
+            if (_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) {
+                _deleteToken(nftAddr, tokenIds[inx]);
+            }
         }
         emit CancelBatch(nftAddr, msg.sender, tokenIds);
     }

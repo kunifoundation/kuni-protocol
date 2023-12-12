@@ -9,13 +9,5 @@ interface IERC721Mint {
     )
         external
         view
-        returns (
-            string memory name,
-            uint256 slash,
-            uint256 heavy,
-            uint256 strike,
-            uint256 tech,
-            uint256 magic,
-            uint256 cat
-        );
+        returns (string memory name, uint256 slash, uint256 heavy, uint256 strike, uint256 tech, uint256 magic, uint256 cat);
 }

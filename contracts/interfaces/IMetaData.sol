@@ -17,9 +17,7 @@ interface IMetaData is IData {
         uint256[] memory tokenIds
     ) external view returns (NFTPartProp memory attack, NFTPartProp memory defend);
     function getPowerAllTokenId(uint256 tokenId) external view returns (NFTPartProp memory power, uint256 total);
-    function getPowerAllTeam(
-        uint256[] calldata tokenIds
-    ) external view returns (NFTPartProp memory power, uint256 total);
+    function getPowerAllTeam(uint256[] calldata tokenIds) external view returns (NFTPartProp memory power, uint256 total);
 
     function addEfficiency(uint256 prop, uint256[] calldata eff) external;
     function addEfficiencyBatch(uint256[] calldata effPro, uint256[][] memory effVals) external;

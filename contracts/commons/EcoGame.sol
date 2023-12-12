@@ -83,9 +83,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         uint256 rate = won ? kuniWin.sub(niohWin) : niohWin.sub((kuniWin));
         if (rate < 500) {
             won =
-                uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, block.number, block.coinbase)))
-                    .mod(10) >
-                500;
+                uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, block.number, block.coinbase))).mod(10) > 5;
         }
     }
 
@@ -123,9 +121,6 @@ contract EcoGame is IEcoGame, Ownable, IData {
     }
 
     function _advantagePoint(NFTPartProp memory _att, NFTPartProp memory _de) internal pure returns (uint256 score) {
-        // for (uint256 inx = 0; inx < _attack.length; inx++) {
-        //   score = score.add(_attack[inx].mul(_DECIMALS.mul(100 ether).div(_defend[inx].add(100 ether))));
-        // }
         score = score.add(_calAdvantagePoint(_att.slash, _de.slash));
         score = score.add(_calAdvantagePoint(_att.heavy, _de.heavy));
         score = score.add(_calAdvantagePoint(_att.strike, _de.strike));

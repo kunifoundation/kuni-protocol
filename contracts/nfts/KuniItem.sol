@@ -72,15 +72,7 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
         external
         view
         override
-        returns (
-            string memory name,
-            uint256 slash,
-            uint256 heavy,
-            uint256 strike,
-            uint256 tech,
-            uint256 magic,
-            uint256 cat
-        )
+        returns (string memory name, uint256 slash, uint256 heavy, uint256 strike, uint256 tech, uint256 magic, uint256 cat)
     {
         Meta memory meta = _metadata[tokenId];
         return (meta.name, meta.slash, meta.heavy, meta.strike, meta.tech, meta.magic, meta.cat);
