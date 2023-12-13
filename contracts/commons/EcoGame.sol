@@ -278,6 +278,10 @@ contract EcoGame is IEcoGame, Ownable, IData {
         result.magic = v1.magic.add(v2.magic);
     }
 
+    function getKuniItemPower(address kuniItem, uint256[][] calldata items) external view returns (NFTPartProp memory attack, NFTPartProp memory defend, uint256 total) {
+        (attack, defend, total) = _getKuniItemPower(kuniItem, items);
+    }
+
     function _getKuniItemPower(
         address kuniItem,
         uint256[][] calldata items

@@ -41,12 +41,17 @@ async function mainTest(core) {
     log(await core.saru.balanceOf(alex.address));
     log(await core.saru.balanceOf(bob.address));
 
+    log('00. scholarship....')
+    await approvedNFT(core.saru, bob, TOKENS.scholarship)
+    await (await core.scholarship.connect(bob).ask(TOKENS.kuniSaru, 6, 5000)).wait()
+
     log("01. apply referral code.....");
     await (await core.referral.connect(alex).applyCode(REF_ROOT)).wait();
     log("02. fighting.....");
-    await (await core.game.connect(alex).fighting([1, 2], [])).wait();
+    await (await core.game.connect(alex).fighting([1, 2, 6], [])).wait();
     log("03. earn kuni.....");
     await (await core.game.connect(alex).earnKuni()).wait();
+    await (await core.game.connect(bob).earnKuni()).wait();
     await mine(500);
     const geAmount = await core.mining.geStakedOf(TOKENS.ge, alex.address);
     log("04. earn kuni.....");
@@ -91,14 +96,19 @@ async function mainTest(core) {
                 0,
             )
     ).wait();
-    log("kuniItem", await core.kuniItem.balanceOf(alex.address));
+    log("kuniItem", await core.kuniItem.balanceOf(alex.address), await core.kuniItem.tokenOfOwnerByIndex(alex.address, 0));
+    log("02. fighting with kuniItem.....");
+    await (await core.game.connect(alex).fighting([6], [[0,0,0,0,5]])).wait();
+    await (await core.game.connect(alex).earnKuni()).wait();
+    await (await core.mining.connect(bob).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, bob.address))).wait();
+    await (await core.mining.connect(alex).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, bob.address))).wait();
+    log("Bob Claimed $Kuni: ", formatEther(await core.mining.balanceOf(bob.address)));
     await (await core.mining.connect(wFounder).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, wFounder.address))).wait();
     log("====== FOUNDATION ======");
     log("$GE", formatEther(await core.game.unclaimedGE(foundation)));
     log("$Hash rate: ", formatEther(await core.mining.geStakedOf(TOKENS.ge, foundation)));
     log("$Kuni pending: ", formatEther(await core.mining.pendingReward(TOKENS.ge, foundation)));
     log("$Kuni: ", formatEther(await core.mining.balanceOf(foundation)));
-
     log("$kuni in pool", formatEther(await core.mining.balanceOf(TOKENS.kuni)));
     log("$GE", formatEther(await core.ge.balanceOf(TOKENS.ge)));
 }

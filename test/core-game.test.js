@@ -433,6 +433,7 @@ describe("------------- Staking token ------------------", () => {
 
     it('09. Input fighting SARU & ITEM', async function() {
         await expect(this.game.connect(bob).fighting([1, 2, 2], [])).to.be.revertedWith("KUNI: Saru Duplicated!");
+        await expect(this.game.connect(bob).fighting([0, 2], [])).to.be.revertedWith("ERC721: invalid token ID");
         await expect(this.game.connect(bob).fighting([1, 2, 3, 4, 5, 11, 12], [])).to.be.revertedWith("KUNI: Unable to process request");
         await expect(this.game.connect(bob).fighting([1, 2, 3], [
             [1,2,3,4,5],
