@@ -33,7 +33,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
 
     uint256 MAX_SUPPLY = 21000000 ether;
     uint256 NUM_OF_BLOCK_PER_DAY = 28800;
-    uint256 MAGIC_NUM = 1e12;
+    uint256 MAGIC_NUM = 1 ether;
     uint256 RATE = 5;
     uint256 BASE_RATE = 10000;
     uint256 BLOCK_LIMIT = 200; // 200 block ~ 10 minute
