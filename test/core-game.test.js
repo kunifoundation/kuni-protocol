@@ -131,12 +131,12 @@ describe("------------- Staking token ------------------", () => {
         await (await this.cotton.setMinter(this.gameAddr)).wait();
         await (await this.lumber.setMinter(this.gameAddr)).wait();
         await (await this.ge.setMinter(this.gameAddr)).wait();
-
-        expect(await this.game.materialAt(0)).to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(1)).to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(2)).to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(3)).to.be.eq(ZeroAddress);
+        expect(await this.game._materials(0)).to.be.eq(ZeroAddress);
+        expect(await this.game._materials(1)).to.be.eq(ZeroAddress);
+        expect(await this.game._materials(2)).to.be.eq(ZeroAddress);
+        expect(await this.game._materials(3)).to.be.eq(ZeroAddress);
         await (await this.game.setMaterials(this.mTokenArr)).wait();
+        expect(await this.game._materials(0)).to.be.eq(this.mTokenArr[0]);
 
         await (await this.mining.addPool(await this.ge.getAddress(), [this.gameAddr, await this.inv.getAddress()])).wait();
 
@@ -188,8 +188,8 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("00. Check material", async function () {
-        expect(await this.game.materialAt(0)).not.to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(3)).not.to.be.eq(ZeroAddress);
+        expect(await this.game._materials(0)).not.to.be.eq(ZeroAddress);
+        expect(await this.game._materials(3)).not.to.be.eq(ZeroAddress);
         expect(this.mTokenArr[0]).to.be.eq(await this.ore.getAddress());
         expect("Ore").to.be.eq(await this.ore.name());
         expect("Stone").to.be.eq(await this.stone.name());
@@ -327,6 +327,7 @@ describe("------------- Staking token ------------------", () => {
     it("07. craft item", async function () {
         await mine(1000);
         await (await this.game.connect(bob).withdraw()).wait();
+        await (await this.game.connect(bob).claim()).wait()
         const invAddr = await this.inv.getAddress();
         await (await this.inv.setMaterialPic(this.mTokenArr, [1, 2, 3, 4])).wait();
         const self = this;

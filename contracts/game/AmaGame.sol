@@ -25,7 +25,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     mapping(address => uint256) private _battleBonus;
     mapping(address => uint256) private stages;
 
-    uint256 MAGIC_NUM = 1e12;
+    uint256 MAGIC_NUM = 1 ether;
+    uint256 PERCENT = 10000;
+    
     uint256 private MAX_SARU = 6;
     // owner => tokenIds
     mapping(address => EnumerableSet.UintSet) private _nftSaru;
@@ -33,7 +35,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     mapping(uint256 => address) private _nftOwner;
     mapping(address => uint256) public kuniStakedOf;
 
-    address[] private _materials = new address[](4);
+    address[] public _materials = new address[](4);
     // material token => user addr => info
     mapping(address => mapping(address => UserInfo)) public userInfo;
     // material token => pool
@@ -86,12 +88,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].add(kuniAmount);
         }
         // call
-        effTeam = _calProductivityTeam(kuniStakedOf[msg.sender], _nftSaru[msg.sender].values());
-        uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
-
+        effTeam = eco.calProductivityTeam(msg.sender, _nftSaru[msg.sender].values(), kuniStakedOf[msg.sender]);
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            uint256 _amount = effTeam[inx].add(kuniStakedOf[msg.sender]).mul(multipliers[inx]).div(MAGIC_NUM);
-            _mUpdateAmount(_materials[inx], _amount);
+            _mUpdateAmount(_materials[inx], effTeam[inx]);
         }
     }
 
@@ -107,29 +106,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function _calProductivityTeam(uint256 amount, uint256[] memory tokenIds) internal view returns (uint256[] memory) {
-        uint256[] memory mValues = new uint256[](4);
-        for (uint256 index = 0; index < tokenIds.length; index++) {
-            uint256[] memory eff = _calProductivity(amount, tokenIds[index]);
-            for (uint256 j = 0; j < eff.length; j++) {
-                mValues[j] = mValues[j].add(eff[j]);
-            }
-        }
-        return mValues;
-    }
-
-    function _calProductivity(uint256 amount, uint256 tokenId) internal view returns (uint256[] memory eff) {
-        eff = eco.productionEfficiencyArr(tokenId);
-        uint256 total = 0;
-        for (uint256 index = 0; index < eff.length; index++) {
-            total = total.add(eff[index]);
-        }
-
-        for (uint256 index = 0; index < eff.length; index++) {
-            eff[index] = eff[index].mul(amount).div(total);
-        }
-    }
-
     function claim() external override nonReentrant {
         for (uint256 inx = 0; inx < _materials.length; inx++) {
             _mClaim(_materials[inx]);
@@ -137,7 +113,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
 
     function withdrawTokens(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
-        require(kuniAmount <= kuniStakedOf[msg.sender], "KUNI: Exceeded!");
         if (tokenIds.length > 0) {
             // saru withdraw
             for (uint256 inx = 0; inx < tokenIds.length; inx++) {
@@ -152,15 +127,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].sub(kuniAmount);
         }
 
-        uint256[] memory multipliers = eco.getContinentalMultiplierArr(msg.sender);
-        uint256[] memory mValues = _calProductivityTeam(kuniStakedOf[msg.sender], _nftSaru[msg.sender].values());
+        uint256[] memory mValues = eco.calProductivityTeam(msg.sender, _nftSaru[msg.sender].values(), kuniStakedOf[msg.sender]);
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            UserInfo storage user = userInfo[_materials[inx]][msg.sender];
-            uint256 amount = mValues[inx].add(kuniStakedOf[msg.sender]).mul(multipliers[inx]).div(MAGIC_NUM);
-            _mUpdateAmount(_materials[inx], amount);
-            // transfer material
-            _transferToken(_materials[inx], user.pendingReward);
-            user.pendingReward = 0;
+            _mUpdateAmount(_materials[inx], mValues[inx]);
         }
     }
 
@@ -176,26 +145,18 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
 
         for (uint256 inx = 0; inx < _materials.length; inx++) {
-            UserInfo storage user = userInfo[_materials[inx]][msg.sender];
-            PoolInfo storage pool = pools[_materials[inx]];
-            if (user.amount > 0) {
-                _mUpdatePool(_materials[inx]);
-                _harvest(_materials[inx], user);
-                _transferToken(_materials[inx], user.pendingReward);
-                pool.supply = pool.supply.sub(user.amount);
-                user.amount = 0;
-                user.rewardDebt = 0;
-                user.pendingReward = 0;
-            }
+            _mUpdateAmount(_materials[inx], 0);
         }
     }
 
     function fighting(
         uint256[] calldata tokenIds,
         uint256[][] calldata itemIds
-    ) external override nonReentrant onlyStart _invalidSaru(tokenIds) _invalidKuniItem(itemIds) {
+    ) external override nonReentrant onlyStart {
         IMiningKuni(miningKuni).gasStart();
         require(itemIds.length <= tokenIds.length && tokenIds.length <= MAX_SARU, "KUNI: Unable to process request");
+        _invalidSaru(tokenIds);
+        _invalidKuniItem(itemIds);
         _fighting(tokenIds, itemIds);
         IMiningKuni(miningKuni).gasEnd();
     }
@@ -229,26 +190,23 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         if (stages[msg.sender] == 0) {
             stages[msg.sender] = 1;
         }
-
-        uint256 reward = 0;
-        uint256 niohPower = eco.niohPower(stages[msg.sender]);
-        (bool won, uint256 totalItem) = eco.advantagePoint(
+        (bool won, uint256 totalItem, uint256 niohPower) = eco.advantagePoint(
             tokenIds,
             kuniItem,
             itemIds,
             stages[msg.sender],
-            _battleBonus[msg.sender],
-            niohPower
+            _battleBonus[msg.sender]
         );
-        reward = eco.rewardPoint(stages[msg.sender], won, tokenIds.length, totalItem);
+        uint256 reward = eco.rewardPoint(stages[msg.sender], won, tokenIds.length, totalItem);
+
         if (won) {
-            stages[msg.sender] = stages[msg.sender] + 1;
+            stages[msg.sender] = stages[msg.sender].add(1);
         }
+
         uint256 myReward = _shareReward(reward, tokenIds, itemIds, totalItem);
-        unclaimedGE[msg.sender] += myReward;
+        unclaimedGE[msg.sender] = unclaimedGE[msg.sender].add(myReward);
         emit Fighting(msg.sender, tokenIds, itemIds, myReward, niohPower, won);
-        (uint256 bonus, ) = eco.battleBonusInc(_battleBonus[msg.sender]);
-        _battleBonus[msg.sender] = bonus;
+        _battleBonus[msg.sender] = eco.battleBonusInc(_battleBonus[msg.sender]);
     }
 
     function _shareReward(
@@ -261,16 +219,16 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         uint256 refReward;
         (reward, refReward, refOwner) = IReferral(referral).refPoint(msg.sender, reward);
         if (refOwner != address(0x0) && refReward > 0) {
-            unclaimedGE[refOwner] += refReward;
+            unclaimedGE[refOwner] = unclaimedGE[refOwner].add(refReward);
         }
 
         uint256 myReward = reward;
-        uint256 perReward = reward.div(tokenIds.length + totalItem);
+        uint256 perReward = reward.div(totalItem.add(tokenIds.length));
         // share saru
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
             (address owner, uint256 percent) = scholar.ownerInfo(kuniSaru, tokenIds[inx]);
             if (owner == msg.sender || owner == address(0x0)) continue;
-            uint256 saruScholarFee = perReward.mul(percent).div(10000);
+            uint256 saruScholarFee = perReward.mul(percent).div(PERCENT);
             unclaimedGE[owner] = unclaimedGE[owner].add(saruScholarFee);
             myReward = myReward.sub(saruScholarFee);
         }
@@ -282,7 +240,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
                 if (tokenId == 0x0) continue;
                 (address owner, uint256 percent) = scholar.ownerInfo(kuniItem, tokenId);
                 if (owner == msg.sender || owner == address(0x0)) continue;
-                uint256 itemScholarFee = perReward.mul(percent).div(10000);
+                uint256 itemScholarFee = perReward.mul(percent).div(PERCENT);
                 unclaimedGE[owner] = unclaimedGE[owner].add(itemScholarFee);
                 myReward = myReward.sub(itemScholarFee);
             }
@@ -290,7 +248,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         return myReward;
     }
 
-    modifier _invalidSaru(uint256[] calldata tokenIds) {
+    function _invalidSaru(uint256[] calldata tokenIds) internal view {
         for (uint256 index = 0; index < tokenIds.length; index++) {
             for (uint256 j = index + 1; j < tokenIds.length; j++) {
                 require(tokenIds[index] != tokenIds[j], "KUNI: Saru Duplicated!");
@@ -303,10 +261,9 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
                 "KUNI: You are not the owner"
             );
         }
-        _;
     }
 
-    modifier _invalidKuniItem(uint256[][] calldata itemIds) {
+    function _invalidKuniItem(uint256[][] calldata itemIds) internal view {
         uint256 len = itemIds.length;
         for (uint256 i = 0; i < len; i++) {
             require(itemIds[i].length == 5, "KUNI: Unable to process request");
@@ -325,7 +282,6 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
                 require(itemIds[i][4] != itemIds[j][4] || itemIds[j][4] == 0, "KUNI: Item Duplicated!");
             }
         }
-        _;
     }
 
     function _equipmentCorrect(address owner, uint256 tokenId, uint256 cat) internal view {
@@ -409,37 +365,24 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     function _mClaim(address mToken) internal {
         UserInfo storage user = userInfo[mToken][msg.sender];
-        if (user.amount > 0) {
-            _mUpdatePool(mToken);
-            _harvest(mToken, user);
-            uint256 _amount = user.pendingReward;
-            _transferToken(mToken, _amount);
-            user.pendingReward = 0;
-        }
+        _mUpdatePool(mToken);
+        _harvest(mToken, user);
+        uint256 _amount = user.pendingReward;
+        _transferToken(mToken, _amount);
+        user.pendingReward = 0;
     }
 
     function pendingReward(address mToken, address sender) external view returns (uint256) {
         PoolInfo storage pool = pools[mToken];
         UserInfo storage user = userInfo[mToken][sender];
-        if (user.amount > 0) {
-            uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
-            uint256 share = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
-            uint256 reward = (user.amount.mul(share).div(MAGIC_NUM)).sub(user.rewardDebt);
-            return reward + user.pendingReward;
-        }
-        return 0;
+        uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
+        uint256 share = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
+        uint256 reward = (user.amount.mul(share).div(MAGIC_NUM)).sub(user.rewardDebt);
+        return reward + user.pendingReward;
     }
 
     function geStakedOf(address mToken, address sender) external view returns (uint256) {
         return userInfo[mToken][sender].amount;
-    }
-
-    function materialAt(uint index) external view returns (address) {
-        return _materials[index];
-    }
-
-    function materials() external view returns (address[] memory) {
-        return _materials;
     }
 
     // internal functions
