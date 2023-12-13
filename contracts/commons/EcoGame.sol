@@ -14,10 +14,12 @@ contract EcoGame is IEcoGame, Ownable, IData {
     using SafeMath for uint256;
 
     IMetaData private meta;
-    uint256 public constant _DECIMALS = 1e18;
+    uint256 public constant MAGIC_NUM = 1e18;
     // Battle Point
-    uint256 public kBonus = 1e3; // => 0,001  mul 1e6
-    uint256 public maxBonus = 2e6; // 1e6
+    uint256 public constant K_BONUS = 1e3; // => 0,001  mul 1e6
+    uint256 public constant MAX_BONUS = 2e6; // 1e6
+    uint256 public constant MAGIC_BONUS = 1e6;
+
 
     constructor(address _kuniMeta) {
         meta = IMetaData(_kuniMeta);
@@ -32,6 +34,10 @@ contract EcoGame is IEcoGame, Ownable, IData {
     }
 
     function productionEfficiencyArr(uint256 tokenId) external view override returns (uint256[] memory) {
+        return _productionEfficiencyArr(tokenId);
+    }
+
+    function _productionEfficiencyArr(uint256 tokenId) internal view returns (uint256[] memory) {
         KuniEfficiency memory eff = meta.getEfficiencyTokenId(tokenId);
         uint256[] memory stats = new uint256[](4);
         stats[0] = eff.ore;
@@ -40,6 +46,8 @@ contract EcoGame is IEcoGame, Ownable, IData {
         stats[3] = eff.lumber;
         return stats;
     }
+
+
 
     function productionEfficiencyTeam(
         uint256[] calldata tokenIds
@@ -62,9 +70,10 @@ contract EcoGame is IEcoGame, Ownable, IData {
         address kuniItem,
         uint256[][] calldata items,
         uint256 stage,
-        uint256 bonus,
-        uint256 power
-    ) external view override returns (bool won, uint256 totalItem) {
+        uint256 bonus
+    ) external view override returns (bool won, uint256 totalItem, uint256 power) {
+        power = _niohPower(stage);
+
         (
             NFTPartProp memory niohAttack,
             NFTPartProp memory niohDefend,
@@ -75,15 +84,14 @@ contract EcoGame is IEcoGame, Ownable, IData {
         totalItem = _totalItem;
         uint256 apKuni = _advantagePoint(kuniAttack, niohDefend);
         uint256 apNioh = _advantagePoint(niohAttack, kuniDefend);
-        apKuni = apKuni.div(_DECIMALS);
-        apNioh = apNioh.div(_DECIMALS);
+
         uint256 kuniWin = apKuni.mul(10000).div(apKuni.add(apNioh));
         uint256 niohWin = apNioh.mul(10000).div(apKuni.add(apNioh));
         won = apKuni > apNioh;
         uint256 rate = won ? kuniWin.sub(niohWin) : niohWin.sub((kuniWin));
         if (rate < 500) {
             won =
-                uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, block.number, block.coinbase))).mod(10) > 5;
+                uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, block.number, block.coinbase))).mod(100) > 50;
         }
     }
 
@@ -130,7 +138,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
 
     // // attack * (100/(100 + defend))
     function _calAdvantagePoint(uint256 _attack, uint256 _defend) internal pure returns (uint256) {
-        return _attack.mul(_DECIMALS.mul(100 ether).div(_defend.add(100 ether)));
+        return _attack.mul(MAGIC_NUM.mul(100 ether).div(_defend.add(100 ether)));
     }
 
     // CRAFT
@@ -195,7 +203,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
     function _materialStas(uint256 _material, uint256 qty) internal view returns (uint256[] memory prop) {
         prop = meta.materialBy(_material);
         for (uint256 inx = 0; inx < prop.length; inx++) {
-            prop[inx] = prop[inx].mul(qty).div(_DECIMALS);
+            prop[inx] = prop[inx].mul(qty).div(MAGIC_NUM);
         }
     }
 
@@ -217,12 +225,11 @@ contract EcoGame is IEcoGame, Ownable, IData {
 
     // new_bonus = current_bonus + (max_bonus - current_bonus)*k
     // current_bonus  + max * k/1000 - current_bonus * k/1000
-    function battleBonusInc(uint256 cBonus) external view override returns (uint256 value, uint decimals) {
-        if (cBonus > maxBonus) {
-            cBonus = maxBonus;
+    function battleBonusInc(uint256 cBonus) external pure override returns (uint256 value) {
+        if (cBonus > MAX_BONUS) {
+            cBonus = MAX_BONUS;
         }
-        value = cBonus.add(maxBonus.sub(cBonus).mul(kBonus).div(1e6));
-        decimals = 4;
+        value = cBonus.add(MAX_BONUS.sub(cBonus).mul(K_BONUS).div(MAGIC_BONUS));
     }
 
     function calNioh(uint256 indx, uint256 value, uint256 power) internal pure returns (NFTPartProp memory item) {
@@ -251,11 +258,11 @@ contract EcoGame is IEcoGame, Ownable, IData {
     }
 
     function _addBonus(NFTPartProp memory v1, uint256 bonus) internal pure returns (NFTPartProp memory) {
-        v1.slash = v1.slash.add(v1.slash.mul(bonus).div(1e6));
-        v1.heavy = v1.heavy.add(v1.heavy.mul(bonus).div(1e6));
-        v1.strike = v1.strike.add(v1.strike.mul(bonus).div(1e6));
-        v1.tech = v1.tech.add(v1.tech.mul(bonus).div(1e6));
-        v1.magic = v1.magic.add(v1.magic.mul(bonus).div(1e6));
+        v1.slash = v1.slash.add(v1.slash.mul(bonus).div(MAGIC_BONUS));
+        v1.heavy = v1.heavy.add(v1.heavy.mul(bonus).div(MAGIC_BONUS));
+        v1.strike = v1.strike.add(v1.strike.mul(bonus).div(MAGIC_BONUS));
+        v1.tech = v1.tech.add(v1.tech.mul(bonus).div(MAGIC_BONUS));
+        v1.magic = v1.magic.add(v1.magic.mul(bonus).div(MAGIC_BONUS));
         return v1;
     }
 
@@ -325,18 +332,12 @@ contract EcoGame is IEcoGame, Ownable, IData {
         }
     }
 
-    function getContinentalMultiplier(address acc) external view override returns (uint256, uint256, uint256, uint256) {
-        uint256 land = uint256(uint160(acc)).mod(4).add(1);
-        return (
-            meta.getContinentalMultiplier(land, 1),
-            meta.getContinentalMultiplier(land, 2),
-            meta.getContinentalMultiplier(land, 3),
-            meta.getContinentalMultiplier(land, 4)
-        );
+    // ore, stone, cotton, lumber
+    function getContinentalMultiplierArr(address acc) external view override returns (uint256[] memory) {
+        return _getContinentalMultiplierArr(acc);
     }
 
-    // ore, stone, cotton, lumber
-    function getContinentalMultiplierArr(address acc) external view override returns (uint256[] memory lands) {
+    function _getContinentalMultiplierArr(address acc) internal view returns (uint256[] memory lands) {
         uint256 land = uint256(uint160(acc)).mod(4).add(1);
         lands = new uint256[](4);
         lands[0] = meta.getContinentalMultiplier(land, 1);
@@ -344,4 +345,34 @@ contract EcoGame is IEcoGame, Ownable, IData {
         lands[2] = meta.getContinentalMultiplier(land, 3);
         lands[3] = meta.getContinentalMultiplier(land, 4);
     }
+
+    function calProductivityTeam(address sender, uint256[] calldata tokenIds, uint256 kuniAmount) external override view returns (uint256[] memory) {
+        uint256[] memory mValues = new uint256[](4);
+        uint256[] memory multipliers = _getContinentalMultiplierArr(sender);
+        for (uint256 index = 0; index < tokenIds.length; index++) {
+            uint256[] memory eff = _calProductivity(kuniAmount, tokenIds[index]);
+            for (uint256 j = 0; j < eff.length; j++) {
+                mValues[j] = mValues[j].add(eff[j]);
+            }
+        }
+
+        mValues[0] = mValues[0].add(kuniAmount).mul(multipliers[0]).div(MAGIC_NUM);
+        mValues[1] = mValues[1].add(kuniAmount).mul(multipliers[1]).div(MAGIC_NUM);
+        mValues[2] = mValues[2].add(kuniAmount).mul(multipliers[2]).div(MAGIC_NUM);
+        mValues[3] = mValues[3].add(kuniAmount).mul(multipliers[3]).div(MAGIC_NUM);
+        return mValues;
+    }
+
+    function _calProductivity(uint256 amount, uint256 tokenId) internal view returns (uint256[] memory eff) {
+        eff = _productionEfficiencyArr(tokenId);
+        uint256 total = 0;
+        for (uint256 index = 0; index < eff.length; index++) {
+            total = total.add(eff[index]);
+        }
+
+        for (uint256 index = 0; index < eff.length; index++) {
+            eff[index] = eff[index].mul(amount).div(total);
+        }
+    }
+
 }

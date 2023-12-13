@@ -21,12 +21,10 @@ interface IEcoGame {
         address kuniItem,
         uint256[][] calldata items,
         uint256 stage,
-        uint256 bonus,
-        uint256 power
-    ) external view returns (bool won, uint256 totalItem);
+        uint256 bonus
+    ) external view returns (bool won, uint256 totalItem, uint256 power);
     function rewardPoint(uint256 stage, bool won, uint256 saru, uint256 item) external view returns (uint256);
-
-    function battleBonusInc(uint256 cBonus) external view returns (uint256 value, uint decimals);
-    function getContinentalMultiplier(address acc) external view returns (uint256, uint256, uint256, uint256);
-    function getContinentalMultiplierArr(address acc) external view returns (uint256[] memory lands);
+    function battleBonusInc(uint256 cBonus) external view returns (uint256 value);
+    function getContinentalMultiplierArr(address acc) external view returns (uint256[] memory);
+    function calProductivityTeam(address sender, uint256[] calldata tokenIds, uint256 kuniAmount) external view returns (uint256[] memory);
 }
