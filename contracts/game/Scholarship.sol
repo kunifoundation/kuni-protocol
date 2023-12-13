@@ -67,7 +67,7 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
 
     function _cancel(address nftAddr, uint256 tokenId) internal {
         ScholarInfo memory info = rateOf[nftAddr][tokenId];
-        require(info.owner == msg.sender, "KUNI: You is not owner");
+        require(info.owner == msg.sender, "KUNI: You are not the owner");
         require(_nfts[nftAddr][address(this)].contains(tokenId), "KUNI: Token not exists!");
         _deleteToken(nftAddr, tokenId);
     }
@@ -123,6 +123,16 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
             percents[i] = info.rate;
         }
         return (tokenIds, owners, percents);
+    }
+
+    function transferOwner(address nftAddr, uint256[] calldata tokenIds, address newOwner) external nonReentrant {
+        for (uint256 inx = 0; inx < tokenIds.length; inx++) {
+            if (_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) {
+                _nfts[nftAddr][msg.sender].remove(tokenIds[inx]);
+                _nfts[nftAddr][newOwner].add(tokenIds[inx]);
+                rateOf[nftAddr][tokenIds[inx]].owner = newOwner;
+            }   
+        }
     }
 
     function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {

@@ -22,9 +22,9 @@ describe("------------- Staking token ------------------", () => {
         [owner, bob, alex, axi, ...addrs] = await ethers.getSigners();
         this.ow = owner;
         this.kuniSaru = await (await ethers.deployContract("KuniSaru")).waitForDeployment();
-        this.amatsu = await (await ethers.deployContract("Scholarship")).waitForDeployment();
+        this.scholarship = await (await ethers.deployContract("Scholarship")).waitForDeployment();
 
-        this.amatsuAddr = await this.amatsu.getAddress();
+        this.scholarshipAddr = await this.scholarship.getAddress();
         this.saruAddr = await this.kuniSaru.getAddress();
 
         // mint saru
@@ -38,8 +38,8 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("01. Scholarship ASK", async function () {
-        await approveNft(this.kuniSaru, bob, this.amatsuAddr);
-        await approveNft(this.kuniSaru, alex, this.amatsuAddr);
+        await approveNft(this.kuniSaru, bob, this.scholarshipAddr);
+        await approveNft(this.kuniSaru, alex, this.scholarshipAddr);
 
         let total = await this.kuniSaru.balanceOf(alex.address);
         let tokenIds = (await Promise.all(_.range(0, Number(total)).map((index) => this.kuniSaru.tokenOfOwnerByIndex(alex.address, index)))).map(
@@ -54,51 +54,76 @@ describe("------------- Staking token ------------------", () => {
         console.log(tokenIds.map((t) => Number(t)));
         const RATE = 6900;
         // ask scholar tokenId
-        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
-        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
-        await expect(this.amatsu.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("KUNI: address to the zero address");
-        tx = await this.amatsu.connect(bob).ask(this.saruAddr, 1, RATE);
-        await expect(this.amatsu.connect(bob).ask(this.saruAddr, 5, RATE)).to.revertedWith("ERC721: transfer from incorrect owner");
+        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
+        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
+        await expect(this.scholarship.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("KUNI: address to the zero address");
+        tx = await this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE);
+        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 5, RATE)).to.revertedWith("ERC721: transfer from incorrect owner");
         await tx.wait();
-        expect(await this.amatsu.balanceOf(this.saruAddr, bob.address)).equal(1);
-        expect(await this.amatsu.balanceOf(this.saruAddr, this.amatsuAddr)).equal(1);
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(1);
+        expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(1);
         expect(await this.kuniSaru.balanceOf(bob.address)).equal(3);
-        tx = await this.amatsu.ownerInfo(this.saruAddr, 1);
+        tx = await this.scholarship.ownerInfo(this.saruAddr, 1);
         expect(bob.address).equal(tx[0]);
         expect(RATE).equal(tx[1]);
 
-        await expect(this.amatsu.connect(alex).cancel(this.saruAddr, 1)).revertedWith("KUNI: You is not owner");
-        tx = await this.amatsu.connect(bob).cancel(this.saruAddr, 1);
+        await expect(this.scholarship.connect(alex).cancel(this.saruAddr, 1)).revertedWith("KUNI: You are not the owner");
+        tx = await this.scholarship.connect(bob).cancel(this.saruAddr, 1);
         await tx.wait();
 
-        tx = await this.amatsu.ownerInfo(this.saruAddr, 1);
+        tx = await this.scholarship.ownerInfo(this.saruAddr, 1);
         expect(ZeroAddress).equal(tx[0]);
         expect(0).equal(tx[1]);
         expect(await this.kuniSaru.balanceOf(bob.address)).equal(4);
-        await expect(this.amatsu.connect(bob).cancel(this.saruAddr, 2)).to.revertedWith("KUNI: You is not owner");
-        tx = await this.amatsu.ownerInfo(this.saruAddr, 0);
+        await expect(this.scholarship.connect(bob).cancel(this.saruAddr, 2)).to.revertedWith("KUNI: You are not the owner");
+        tx = await this.scholarship.ownerInfo(this.saruAddr, 0);
         expect(ZeroAddress).equal(tx[0]);
         expect(0).equal(tx[1]);
         expect(await this.kuniSaru.balanceOf(bob.address)).equal(4);
     });
 
-    it("03. Scholarship ASK batch", async function () {
-        expect(await this.amatsu.balanceOf(this.saruAddr, bob.address)).to.equal(0);
+    it("02. Scholarship ask & cancel batch", async function () {
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(0);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(4);
-        tx = await this.amatsu.connect(bob).askBatch(this.saruAddr, [1, 2, 3], [4000, 4100, 4500]);
-        await tx.wait();
-        expect(await this.amatsu.balanceOf(this.saruAddr, bob.address)).to.equal(3);
+        await (await this.scholarship.connect(bob).askBatch(this.saruAddr, [1, 2, 3], [4000, 4100, 4500])).wait();
+
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(3);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(1);
+        
+        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [2, 3])).wait();
 
-        tx = await this.amatsu.connect(bob).cancelBatch(this.saruAddr, [2, 3]);
-        await tx.wait();
-
-        expect(await this.amatsu.balanceOf(this.saruAddr, bob.address)).to.equal(1);
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(1);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(3);
 
-        tx = await this.amatsu.connect(bob).cancelBatch(this.saruAddr, [1, 2, 3]);
-        await tx.wait();
-        expect(await this.amatsu.balanceOf(this.saruAddr, bob.address)).equal(0);
+        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1, 2, 3])).wait();
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(0);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(4);
+    });
+
+    it("03. Scholarship transfer owner", async function () {
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(0);
+        expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(4);
+        await (await this.scholarship.connect(bob).askBatch(this.saruAddr, [1, 2, 3], [4000, 4100, 4500])).wait();
+        
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(3);
+        expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(1);
+        expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(3);
+        expect((await this.scholarship.rateOf(this.saruAddr, 2)).owner).equal(bob.address)
+        expect((await this.scholarship.rateOf(this.saruAddr, 3)).owner).equal(bob.address)
+        await (await this.scholarship.connect(bob).transferOwner(this.saruAddr, [2, 3], axi.address)).wait();
+        expect((await this.scholarship.rateOf(this.saruAddr, 2)).owner).equal(axi.address)
+        expect((await this.scholarship.rateOf(this.saruAddr, 3)).owner).equal(axi.address)
+        expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(3);
+        expect(await this.scholarship.balanceOf(this.saruAddr, axi.address)).to.equal(2);
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(1);
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(1);
+        expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(1);
+        await (await this.scholarship.connect(axi).cancelBatch(this.saruAddr, [2, 3])).wait();
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(1);
+        expect(await this.kuniSaru.balanceOf(axi.address)).to.equal(2);
+        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1, 2, 3])).wait();
+        expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(2);
+        expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(0);
+        expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(0);
     });
 });
