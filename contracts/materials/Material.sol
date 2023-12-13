@@ -11,7 +11,6 @@ contract Material is ERC20, Ownable, IMaterial {
     using SafeMath for uint256;
     uint256 MAX_SUPPLY = 21000000 ether / 4;
     uint256 NUM_OF_BLOCK_PER_DAY = 28800;
-    uint256 MAGIC_NUM = 1e12;
     uint256 RATE = 5;
     uint256 BASE_RATE = 10000;
 
