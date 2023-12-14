@@ -153,7 +153,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
 
     function _primaryStat(uint256[] calldata items) internal pure returns (uint256 m1) {
         m1 = 0;
-        for (uint256 inx = 1; inx < items.length - 2; inx++) {
+        for (uint256 inx = 1; inx < items.length - 1; inx++) {
             if (items[m1] < items[inx]) {
                 m1 = inx;
             }
@@ -162,7 +162,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
 
     function _secondaryStat(uint256[] calldata items, uint256 m1) internal pure returns (uint256 m2) {
         uint256 val = type(uint256).min;
-        for (uint256 inx = 0; inx < items.length - 1; inx++) {
+        for (uint256 inx = 0; inx < items.length; inx++) {
             if (inx == m1) continue;
             if (items[inx] > val) {
                 val = items[inx];
@@ -173,7 +173,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
 
     function _minorStat(uint256[] calldata items, uint256 m1, uint256 m2) internal pure returns (uint256 m3) {
         uint256 val = type(uint256).min;
-        for (uint256 inx = 0; inx < items.length - 1; inx++) {
+        for (uint256 inx = 0; inx < items.length; inx++) {
             if (inx == m1 || inx == m2) continue;
             if (items[inx] > val) {
                 val = items[inx];

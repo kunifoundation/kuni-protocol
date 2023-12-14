@@ -136,10 +136,10 @@ describe("------------- Staking token ------------------", () => {
 
         await (await this.ge.setMinter(this.gameAddr)).wait();
 
-        expect(await this.game.materialAt(0)).to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(1)).to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(2)).to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(3)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(0)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(1)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(2)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(3)).to.be.eq(ZeroAddress);
         await (await this.game.setMaterials(this.mTokenArr)).wait();
 
         await (await this.mining.addPool(await this.ge.getAddress(), [this.gameAddr, await this.inv.getAddress()])).wait();
@@ -172,8 +172,8 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("00. Check material", async function () {
-        expect(await this.game.materialAt(0)).not.to.be.eq(ZeroAddress);
-        expect(await this.game.materialAt(3)).not.to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(0)).not.to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(3)).not.to.be.eq(ZeroAddress);
         expect(this.mTokenArr[0]).to.be.eq(await this.ore.getAddress());
         expect("Ore").to.be.eq(await this.ore.name());
         expect("Stone").to.be.eq(await this.stone.name());
@@ -197,11 +197,9 @@ describe("------------- Staking token ------------------", () => {
         expect(0).to.be.eq(await this.game.balanceOf(bob.address));
         await deposit(this, bob, 0, [1, 2]);
         await checkDepositAfter(this, bob, 2, 2);
-        tx = await this.game.connect(bob).withdrawTokens(0, [2]);
-        await tx.wait();
+        await (await this.game.connect(bob).withdrawTokens(0, [2])).wait();
         await checkDepositAfter(this, bob, 1, 1);
-        tx = await this.game.connect(bob).withdraw();
-        await tx.wait();
+        await (await this.game.connect(bob).withdraw()).wait();
         await checkDepositAfter(this, bob, 0, 0);
     });
 
@@ -224,50 +222,39 @@ describe("------------- Staking token ------------------", () => {
 
     it("05. fighting....", async function () {
         await expect(this.game.connect(bob).fighting([1, 2, 6], [])).to.be.revertedWith("KUNI: You are not the owner");
-        tx = await this.game.connect(bob).fighting([1], [[0, 0, 0, 0, 0]]);
-        await tx.wait();
-        tx = await this.game.connect(bob).fighting([1, 2], []);
-        await tx.wait();
+        await (await this.game.connect(bob).fighting([1], [[0, 0, 0, 0, 0]])).wait();
+        await (await this.game.connect(bob).fighting([1, 2], [])).wait();
         let lv = 20;
         while (lv > 0) {
             lv--;
-            tx = await this.game.connect(bob).fighting([1, 2], []);
-            await tx.wait();
+            await (await this.game.connect(bob).fighting([1, 2], [])).wait();
             await sleep(500);
         }
 
         console.log("unclaimedGE: ", (await this.game.unclaimedGE(bob.address)) / e1);
-        tx = await this.game.connect(bob).claimGE();
-        await tx.wait();
+        await (await this.game.connect(bob).claimGE()).wait();
         const totalGE = await this.ge.balanceOf(bob.address);
         log("GE", formatEther(totalGE));
         await approveToken(this.ge, bob, await this.mining.getAddress());
         await approveToken(this.ge, alex, await this.mining.getAddress());
         const geAddr = await this.ge.getAddress();
         const mineGE = totalGE / 4n;
-        tx = await this.ge.connect(bob).transfer(alex.address, mineGE);
-        await tx.wait();
-        tx = await this.mining.connect(bob).mineKuni(geAddr, mineGE);
-        await tx.wait();
+        await (await this.ge.connect(bob).transfer(alex.address, mineGE)).wait();
+        await (await this.mining.connect(bob).mineKuni(geAddr, mineGE)).wait();
         await mine(9206774 * 3);
-        tx = await this.mining.connect(alex).mineKuni(geAddr, mineGE);
-        await tx.wait();
-        tx = await this.mining.connect(bob).claimKuni(geAddr, mineGE);
-        await tx.wait();
+        await (await this.mining.connect(alex).mineKuni(geAddr, mineGE)).wait();
+        await (await this.mining.connect(bob).claimKuni(geAddr, mineGE)).wait();
         log("KUNI", (await this.mining.balanceOf(bob.address)) / e1);
-        tx = await this.mining.connect(bob).mineKuni(geAddr, mineGE);
-        await tx.wait();
+        await (await this.mining.connect(bob).mineKuni(geAddr, mineGE)).wait();
         await mine(9206774 * 3);
-        tx = await this.mining.connect(bob).claimKuni(geAddr, mineGE);
-        await tx.wait();
+        await (await this.mining.connect(bob).claimKuni(geAddr, mineGE)).wait();
         log("KUNI", (await this.mining.balanceOf(bob.address)) / e1);
         // tx = await this.mining.connect(bob).mineKuni(geAddr, mineGE)
         // await tx.wait()
         await mine(9206774 * 3);
         // tx = await this.mining.connect(bob).claimKuni(geAddr, mineGE)
         // await tx.wait()
-        tx = await this.mining.connect(alex).claimKuni(geAddr, mineGE);
-        await tx.wait();
+        await (await this.mining.connect(alex).claimKuni(geAddr, mineGE)).wait();
 
         log("KUNI BOB", (await this.mining.balanceOf(bob.address)) / e1);
         expect(0).to.be.eq(await this.ge.balanceOf(alex.address));
@@ -291,7 +278,7 @@ describe("------------- Staking token ------------------", () => {
         await (await this.game.connect(alex).earnKuni()).wait();
         await mine(10);
         const geAddr = await this.ge.getAddress();
-        await await this.mining.connect(alex).claimKuni(geAddr, await this.mining.geStakedOf(geAddr, alex.address));
+        await (await this.mining.connect(alex).claimKuni(geAddr, await this.mining.geStakedOf(geAddr, alex.address))).wait();
         await approveToken(this.mining, alex, this.gameAddr);
         await (await this.game.connect(alex).deposit(await this.mining.balanceOf(alex.address), [])).wait();
         await mine(2);
@@ -302,71 +289,10 @@ describe("------------- Staking token ------------------", () => {
         // await sleep(500)
     });
 
-    // it("06. Game Inv Craft", async function() {
-    //   // const inv = await (await deployContract('AmaInv', [  await this.eco.getAddress() ])).waitForDeployment();
-
-    //   const invAddr = await this.inv.getAddress()
-
-    //   log('fouder', (await this.ge.balanceOf(founder.address))/e1)
-
-    //   tx = await this.item.setMinter(invAddr)
-    //   await tx.wait()
-    //   // console.log('address', invAddr);
-    //   logMaterials(this, bob)
-    // tx = await (await this.inv.setMaterialPic(this.mTokenArr, [1,2,3,4])).wait()
-    //   await tx.wait()
-    //   await approveToken(this.ore, bob, invAddr)
-    //   await approveToken(this.stone, bob, invAddr)
-    //   await approveToken(this.cotton, bob, invAddr)
-    //   await approveToken(this.lumber, bob, invAddr)
-    //   tx = await this.inv.connect(bob).craft(this.mTokenArr, ['1.2',1,1,2,1].map(t => parseEther(`${t}`)), 1)
-    //   await tx.wait()
-    //   log(await this.item.balanceOf(bob.address))
-    //   log(await this.inv.currentCapOf(bob.address))
-    // })
-
-    // it('06. claim GE', async function() {
-    //   // tx = await this.fWallet.emergencyWithdraw(await this.ge.getAddress(), axi.address)
-    //   // await tx.wait()
-    //   // log('axi', (await this.ge.balanceOf(axi.address))/e1)
-
-    //   log('founder', (await this.ge.balanceOf(founder.address))/e1)
-    //   await this.fWallet.setSpender(axi.address);
-    //   await tx.wait()
-
-    //   tx = await this.fWallet.connect(axi).mineKuni(await this.mining.getAddress(), await this.ge.getAddress())
-    //   await tx.wait()
-
-    //   expect(0).to.be.eq(await this.ge.balanceOf(founder.address))
-
-    //   expect(0).to.be.eq(await this.mining.balanceOf(founder.address))
-    //   tx = await this.fWallet.claimKuni(await this.mining.getAddress(), await this.ge.getAddress())
-    //   await tx.wait()
-    //   log((await this.mining.balanceOf(founder.address))/e1)
-
-    //   tx = await this.fWallet.emergencyWithdraw(await this.mining.getAddress(), axi.address)
-    //   await tx.wait()
-    //   log('axi', (await this.mining.balanceOf(axi.address))/e1)
-    //   expect(0).to.be.eq(await this.mining.balanceOf(founder.address))
-    // })
-
-    // it('07. check founder wallet', async function() {
-    //   const fAddr = founder.address
-    //   // log(()/e1)
-    //   expect(0).to.be.eq(await ethers.provider.getBalance(fAddr))
-    //   tx = await deployer.sendTransaction({from: deployer.address, to: fAddr, value: e1})
-    //   await tx.wait()
-    //   expect(e1).to.be.eq(await ethers.provider.getBalance(fAddr))
-    //   tx = await this.fWallet.emergencyWithdraw(ZeroAddress, axi.address)
-    //   await tx.wait()
-    //   expect(0).to.be.eq(await ethers.provider.getBalance(fAddr))
-
-    //   await expect(this.fWallet.connect(axi).emergencyWithdraw(ZeroAddress, axi.address)).revertedWith('Ownable: caller is not the owner')
-    // })
-
     it("08. craft item", async function () {
         await mine(1000);
         await (await this.game.connect(bob).withdraw()).wait();
+        await (await this.game.connect(bob).claim()).wait();
         const acc = bob;
         const invAddr = await this.inv.getAddress();
         await approveToken(this.cotton, bob, invAddr);
@@ -400,7 +326,5 @@ describe("------------- Staking token ------------------", () => {
             t += meta[index];
         }
         log("power", t / p16);
-        // }
-        // await sleep(10000)
     });
 });

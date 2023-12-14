@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.6;
 
-import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -13,7 +12,7 @@ import "../interfaces/IERC721Mint.sol";
 import "../nfts/KuniItem.sol";
 import "../interfaces/IMiningKuni.sol";
 
-contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
+contract AmaInv is IAmaInv, Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -51,24 +50,15 @@ contract AmaInv is IAmaInv, Ownable, Pausable, ReentrancyGuard {
                 total = total.add(amounts[index]);
                 IERC20(addr[index]).safeTransferFrom(address(msg.sender), address(this), amounts[index]);
             } else {
-                revert("KUNI: Material not support or qty low!");
+                revert("KUNI: Not support or qty low!");
             }
         }
         uint256 cap = _currentCapOf(msg.sender);
         require(total > 0 && total <= cap.mul(1e18), "KUNI: Materials Limit reached. Please reduce the number of materials");
-        // slash; heavy; strike; tech; magic;
-        uint256[] memory _stats = eco.materialStasBatch(pic, amounts);
-        uint256[] memory stats = new uint256[](6); // = [slash, heavy, strike, tech, magic, type];
-        string memory name;
-        for (uint256 i = 0; i < _stats.length; i++) {
-            stats[i] = _stats[i];
-        }
-
-        uint256 cat;
-        (name, cat) = eco.toCraftNameCat(stats, attack);
-        stats[5] = cat;
+        uint256[] memory stats = eco.materialStasBatch(pic, amounts); // slash, heavy, strike, tech, magic
+        (string memory name, uint256 cat) = eco.toCraftNameCat(stats, attack);
         require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "KUNI: NAME_EMPTY");
-        IERC721Mint(kuniItem).safeMint(msg.sender, name, stats);
+        IERC721Mint(kuniItem).safeMint(msg.sender, name, stats, cat);
         uint256 tokenId = IERC721Mint(kuniItem).currentId(cat);
         currentCap[msg.sender] = cap + STEP;
         emit Craft(msg.sender, tokenId);
