@@ -152,12 +152,28 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     function fighting(
         uint256[] calldata tokenIds,
         uint256[][] calldata itemIds
-    ) external override nonReentrant onlyStart {
+    ) external override {
+       _fighting(tokenIds, itemIds);
+    }
+
+    function fightingAndEarn(
+        uint256[] calldata tokenIds,
+        uint256[][] calldata itemIds
+    ) external {
+        _fighting(tokenIds, itemIds);
+        _earnKuni(msg.sender);
+        _earnKuni(foundation);
+    }
+
+    function _fighting(
+        uint256[] calldata tokenIds,
+        uint256[][] calldata itemIds
+    ) internal nonReentrant onlyStart {
         IMiningKuni(miningKuni).gasStart();
         require(itemIds.length <= tokenIds.length && tokenIds.length <= MAX_SARU, "KUNI: Unable to process request");
         _invalidSaru(tokenIds);
         _invalidKuniItem(itemIds);
-        _fighting(tokenIds, itemIds);
+        _battleKuni(tokenIds, itemIds);
         IMiningKuni(miningKuni).gasEnd();
     }
 
@@ -186,7 +202,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
     }
 
-    function _fighting(uint256[] calldata tokenIds, uint256[][] calldata itemIds) internal {
+    function _battleKuni(uint256[] calldata tokenIds, uint256[][] calldata itemIds) internal {
         if (stages[msg.sender] == 0) {
             stages[msg.sender] = 1;
         }
