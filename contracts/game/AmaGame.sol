@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.6;
 
-import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -17,7 +16,7 @@ import "../interfaces/IMiningKuni.sol";
 import "../interfaces/IReferral.sol";
 import "../interfaces/IScholarship.sol";
 
-contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuard {
+contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -35,7 +34,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     mapping(uint256 => address) private _nftOwner;
     mapping(address => uint256) public kuniStakedOf;
 
-    address[] public _materials = new address[](4);
+    address[] public getMaterials = new address[](4);
     // material token => user addr => info
     mapping(address => mapping(address => UserInfo)) public userInfo;
     // material token => pool
@@ -89,8 +88,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
         // call
         effTeam = eco.calProductivityTeam(msg.sender, _nftSaru[msg.sender].values(), kuniStakedOf[msg.sender]);
-        for (uint256 inx = 0; inx < _materials.length; inx++) {
-            _mUpdateAmount(_materials[inx], effTeam[inx]);
+        for (uint256 inx = 0; inx < getMaterials.length; inx++) {
+            _mUpdateAmount(getMaterials[inx], effTeam[inx]);
         }
     }
 
@@ -107,8 +106,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     }
 
     function claim() external override nonReentrant {
-        for (uint256 inx = 0; inx < _materials.length; inx++) {
-            _mClaim(_materials[inx]);
+        for (uint256 inx = 0; inx < getMaterials.length; inx++) {
+            _mClaim(getMaterials[inx]);
         }
     }
 
@@ -128,8 +127,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
         }
 
         uint256[] memory mValues = eco.calProductivityTeam(msg.sender, _nftSaru[msg.sender].values(), kuniStakedOf[msg.sender]);
-        for (uint256 inx = 0; inx < _materials.length; inx++) {
-            _mUpdateAmount(_materials[inx], mValues[inx]);
+        for (uint256 inx = 0; inx < getMaterials.length; inx++) {
+            _mUpdateAmount(getMaterials[inx], mValues[inx]);
         }
     }
 
@@ -144,8 +143,8 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
             kuniStakedOf[msg.sender] = 0;
         }
 
-        for (uint256 inx = 0; inx < _materials.length; inx++) {
-            _mUpdateAmount(_materials[inx], 0);
+        for (uint256 inx = 0; inx < getMaterials.length; inx++) {
+            _mUpdateAmount(getMaterials[inx], 0);
         }
     }
 
@@ -403,17 +402,13 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
 
     // internal functions
     function _addToken(address _from, uint256 _tokenId) internal {
-        if (!_nftSaru[_from].contains(_tokenId)) {
-            _nftSaru[_from].add(_tokenId);
-            _nftOwner[_tokenId] = _from;
-        }
+        _nftSaru[_from].add(_tokenId);
+        _nftOwner[_tokenId] = _from;
     }
 
     function _removeToken(address _from, uint256 _tokenId) internal {
-        if (_nftSaru[_from].contains(_tokenId)) {
-            _nftSaru[_from].remove(_tokenId);
-            delete _nftOwner[_tokenId];
-        }
+        _nftSaru[_from].remove(_tokenId);
+        delete _nftOwner[_tokenId];
     }
 
     function _transfer(address _from, address _to, uint256 _tokenId) internal {
@@ -442,7 +437,7 @@ contract AmaGame is IAmaGame, Ownable, Pausable, IERC721Receiver, ReentrancyGuar
     // // ore, stone, cotton, lumber
     function setMaterials(address[] calldata tokens) external onlyOwner {
         for (uint256 i = 0; i < tokens.length; i++) {
-            _materials[i] = tokens[i];
+            getMaterials[i] = tokens[i];
         }
     }
 
