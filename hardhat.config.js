@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-gas-reporter");
 const fs = require('fs');
 require("solidity-docgen")
 const mnemonic = fs.readFileSync(".secret-bsc").toString().trim()
@@ -50,6 +51,9 @@ module.exports = {
     theme: 'markdown',
     collapseNewlines: true,
     pageExtension: '.md',
+  },
+  gasReporter: {
+    enabled: true
   }
 };
 
