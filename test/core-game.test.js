@@ -49,8 +49,8 @@ async function checkDepositAfter(self, acc, tAcc, total) {
 }
 
 async function approveToken(token, acc, spender) {
-    console.log("token", await token.name(), (await token.balanceOf(acc.address)) / p16);
-    if ((await token.allowance(acc.address, spender)) <= 0) {
+    // console.log("Token", await token.name(), (await token.balanceOf(acc.address)) / p16);
+    if ((await token.allowance(acc.address, spender)) == 0) {
         const t = await token.connect(acc).approve(spender, MaxUint256);
         await t.wait();
         await sleep(150);
@@ -58,7 +58,7 @@ async function approveToken(token, acc, spender) {
 }
 
 async function logMaterialsAddr(self, addr) {
-    log("acc: ", addr);
+    log("ACC: ", addr);
     log("ore", formatEther(await self.materials.ore.balanceOf(addr)));
     log("stone", formatEther(await self.materials.stone.balanceOf(addr)));
     log("cotton", formatEther(await self.materials.cotton.balanceOf(addr)));
@@ -131,12 +131,12 @@ describe("------------- Staking token ------------------", () => {
         await (await this.cotton.setMinter(this.gameAddr)).wait();
         await (await this.lumber.setMinter(this.gameAddr)).wait();
         await (await this.ge.setMinter(this.gameAddr)).wait();
-        expect(await this.game._materials(0)).to.be.eq(ZeroAddress);
-        expect(await this.game._materials(1)).to.be.eq(ZeroAddress);
-        expect(await this.game._materials(2)).to.be.eq(ZeroAddress);
-        expect(await this.game._materials(3)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(0)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(1)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(2)).to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(3)).to.be.eq(ZeroAddress);
         await (await this.game.setMaterials(this.mTokenArr)).wait();
-        expect(await this.game._materials(0)).to.be.eq(this.mTokenArr[0]);
+        expect(await this.game.getMaterials(0)).to.be.eq(this.mTokenArr[0]);
 
         await (await this.mining.addPool(await this.ge.getAddress(), [this.gameAddr, await this.inv.getAddress()])).wait();
 
@@ -155,14 +155,14 @@ describe("------------- Staking token ------------------", () => {
         const self = this;
         async function initSaru(start) {
             const limit = 125
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
-            await initSaruData(self.meta, start * limit, (++start) * limit);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
+            await initSaruData(self.meta, start * limit, (++start) * limit, false);
             return start;
         }
 
@@ -188,8 +188,8 @@ describe("------------- Staking token ------------------", () => {
     });
 
     it("00. Check material", async function () {
-        expect(await this.game._materials(0)).not.to.be.eq(ZeroAddress);
-        expect(await this.game._materials(3)).not.to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(0)).not.to.be.eq(ZeroAddress);
+        expect(await this.game.getMaterials(3)).not.to.be.eq(ZeroAddress);
         expect(this.mTokenArr[0]).to.be.eq(await this.ore.getAddress());
         expect("Ore").to.be.eq(await this.ore.name());
         expect("Stone").to.be.eq(await this.stone.name());
@@ -491,5 +491,12 @@ describe("------------- Staking token ------------------", () => {
         ])).wait()
         await (await this.game.connect(bob).fightingAndEarn([1], [
         ])).wait()
+    })
+
+    it('11. Test withdrawTokens', async function() {
+        await (await this.game.connect(bob).deposit(parseEther('1'), [1,2,3])).wait()
+        await mine(100)
+        await (await this.game.connect(bob).withdrawTokens(0, [3])).wait()
+        await expect(this.game.connect(alex).withdrawTokens(0, [3])).rejectedWith("KUNI: You are not the owner")
     })
 });
