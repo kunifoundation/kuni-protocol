@@ -6,11 +6,10 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../interfaces/IScholarship.sol";
 
-contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable {
+contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
     using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -26,8 +25,6 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
     mapping(address => mapping(uint256 => ScholarInfo)) public rateOf;
 
     function ask(address nftAddr, uint256 tokenId, uint256 rate) external override nonReentrant {
-        require(nftAddr != address(0), "KUNI: address to the zero address");
-        require(rate > 0 && rate <= PERCENT, "KUNI: Rate > 0 && Rate <= 10000");
         _ask(nftAddr, tokenId, rate);
         emit Ask(nftAddr, msg.sender, tokenId, rate);
     }
@@ -39,9 +36,7 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
 
     function askBatch(address nftAddr, uint256[] calldata tokenIds, uint256[] calldata arrRate) external override nonReentrant {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-            if (!_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) {
                 _ask(nftAddr, tokenIds[inx], arrRate[inx]);
-            }
         }
 
         emit AskBatch(msg.sender, nftAddr, tokenIds, arrRate);
@@ -49,26 +44,22 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
 
     function cancelBatch(address nftAddr, uint256[] calldata tokenIds) external override nonReentrant {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-            if (_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) {
-                _deleteToken(nftAddr, tokenIds[inx]);
-            }
+            _cancel(nftAddr, tokenIds[inx]);
         }
         emit CancelBatch(nftAddr, msg.sender, tokenIds);
     }
 
     function _ask(address nftAddr, uint256 tokenId, uint256 rate) internal {
-        if (!_nfts[nftAddr][msg.sender].contains(tokenId) && rate <= PERCENT) {
-            IERC721(nftAddr).transferFrom(msg.sender, address(this), tokenId);
-            _nfts[nftAddr][address(this)].add(tokenId);
-            _nfts[nftAddr][msg.sender].add(tokenId);
-            rateOf[nftAddr][tokenId] = ScholarInfo(msg.sender, rate);
-        }
+        require(rate < PERCENT, "KUNI: Rate < 10000");
+        IERC721(nftAddr).transferFrom(msg.sender, address(this), tokenId);
+        _nfts[nftAddr][address(this)].add(tokenId);
+        _nfts[nftAddr][msg.sender].add(tokenId);
+        rateOf[nftAddr][tokenId] = ScholarInfo(msg.sender, rate);
     }
 
     function _cancel(address nftAddr, uint256 tokenId) internal {
         ScholarInfo memory info = rateOf[nftAddr][tokenId];
         require(info.owner == msg.sender, "KUNI: You are not the owner");
-        require(_nfts[nftAddr][address(this)].contains(tokenId), "KUNI: Token not exists!");
         _deleteToken(nftAddr, tokenId);
     }
 
@@ -127,11 +118,10 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard, Ownable 
 
     function transferOwner(address nftAddr, uint256[] calldata tokenIds, address newOwner) external nonReentrant {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-            if (_nfts[nftAddr][msg.sender].contains(tokenIds[inx])) {
-                _nfts[nftAddr][msg.sender].remove(tokenIds[inx]);
-                _nfts[nftAddr][newOwner].add(tokenIds[inx]);
-                rateOf[nftAddr][tokenIds[inx]].owner = newOwner;
-            }   
+            require(_nfts[nftAddr][msg.sender].contains(tokenIds[inx]), "KUNI: You are not the owner");
+            _nfts[nftAddr][msg.sender].remove(tokenIds[inx]);
+            _nfts[nftAddr][newOwner].add(tokenIds[inx]);
+            rateOf[nftAddr][tokenIds[inx]].owner = newOwner;
         }
     }
 

@@ -10,7 +10,6 @@ const {ZeroAddress, toNumber} = ethers;
 async function approveNft(token, acc, operator) {
     if (!(await token.isApprovedForAll(acc.address, operator))) {
         await (await token.connect(acc).setApprovalForAll(operator, true)).wait();
-        log("approve nft ", await token.getAddress());
     }
 }
 
@@ -45,21 +44,20 @@ describe("------------- Staking token ------------------", () => {
         let tokenIds = (await Promise.all(_.range(0, Number(total)).map((index) => this.kuniSaru.tokenOfOwnerByIndex(alex.address, index)))).map(
             (t) => Number(t),
         );
-        console.log(tokenIds.map((t) => toNumber(t)));
+        // console.log(tokenIds.map((t) => toNumber(t)));
 
         total = await this.kuniSaru.balanceOf(bob.address);
         tokenIds = (await Promise.all(_.range(0, Number(total)).map((index) => this.kuniSaru.tokenOfOwnerByIndex(bob.address, index)))).map((t) =>
             Number(t),
         );
-        console.log(tokenIds.map((t) => Number(t)));
+        // console.log(tokenIds.map((t) => Number(t)));
         const RATE = 6900;
         // ask scholar tokenId
-        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
-        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("KUNI: Rate > 0 && Rate <= 10000");
-        await expect(this.scholarship.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("KUNI: address to the zero address");
-        tx = await this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE);
+        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate < 10000");
+        // await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("KUNI: Rate < 10000");
+        // await expect(this.scholarship.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("function call to a non-contract account");
+        await (await this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE)).wait()
         await expect(this.scholarship.connect(bob).ask(this.saruAddr, 5, RATE)).to.revertedWith("ERC721: transfer from incorrect owner");
-        await tx.wait();
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(1);
         expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(1);
         expect(await this.kuniSaru.balanceOf(bob.address)).equal(3);
@@ -94,8 +92,8 @@ describe("------------- Staking token ------------------", () => {
 
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(1);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(3);
-
-        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1, 2, 3])).wait();
+        await expect(this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1, 2])).rejectedWith("KUNI: You are not the owner");
+        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1])).wait();
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(0);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(4);
     });
@@ -110,6 +108,7 @@ describe("------------- Staking token ------------------", () => {
         expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(3);
         expect((await this.scholarship.rateOf(this.saruAddr, 2)).owner).equal(bob.address)
         expect((await this.scholarship.rateOf(this.saruAddr, 3)).owner).equal(bob.address)
+        await expect(this.scholarship.connect(bob).transferOwner(this.saruAddr, [2, 3, 5], axi.address)).revertedWith("KUNI: You are not the owner")
         await (await this.scholarship.connect(bob).transferOwner(this.saruAddr, [2, 3], axi.address)).wait();
         expect((await this.scholarship.rateOf(this.saruAddr, 2)).owner).equal(axi.address)
         expect((await this.scholarship.rateOf(this.saruAddr, 3)).owner).equal(axi.address)
@@ -121,7 +120,7 @@ describe("------------- Staking token ------------------", () => {
         await (await this.scholarship.connect(axi).cancelBatch(this.saruAddr, [2, 3])).wait();
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(1);
         expect(await this.kuniSaru.balanceOf(axi.address)).to.equal(2);
-        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1, 2, 3])).wait();
+        await (await this.scholarship.connect(bob).cancelBatch(this.saruAddr, [1])).wait();
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(2);
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).equal(0);
         expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(0);
