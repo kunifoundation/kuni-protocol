@@ -113,8 +113,6 @@ contract EcoGame is IEcoGame, Ownable, IData {
             uint256 totalItem
         )
     {
-        // power = _niohPower(stage, diffi);
-
         // NIOH
         (niohAttack, niohDefend) = _createNioh(stage, power);
 
@@ -232,14 +230,9 @@ contract EcoGame is IEcoGame, Ownable, IData {
         value = cBonus.add(MAX_BONUS.sub(cBonus).mul(K_BONUS).div(MAGIC_BONUS));
     }
 
-    function calNioh(uint256 indx, uint256 value, uint256 power) internal pure returns (NFTPartProp memory item) {
+    function _calNioh(uint256 indx, uint256 power) internal pure returns (NFTPartProp memory item) {
         uint256[] memory stats = new uint256[](5); // = [slash, heavy, strike, tech, magic];
-        for (uint256 index = 1; index <= stats.length; index++) {
-            if (indx == index) {
-                stats[index - 1] = (value * power) / 100;
-                break;
-            }
-        }
+        stats[indx] = power;
         item.slash = stats[0];
         item.heavy = stats[1];
         item.strike = stats[2];
@@ -248,13 +241,18 @@ contract EcoGame is IEcoGame, Ownable, IData {
     }
 
     function _createNioh(
-        uint256 _stage,
+        uint256 stage,
         uint256 power
     ) internal pure returns (NFTPartProp memory attack, NFTPartProp memory defend) {
-        uint256 atk = (_stage % 5) + 1;
-        uint256 def = ((_stage + 1) % 5) + 1;
-        attack = calNioh(atk, _stage % 2 == 0 ? 25 : 75, power);
-        defend = calNioh(def, _stage % 2 == 0 ? 75 : 25, power);
+        uint256 multiplier = stage % 2 == 0 ? 25 : 75;
+        uint256 pAtk = multiplier.mul(power).div(100);
+        attack = _calNioh(stage % 5, pAtk);
+        defend = _calNioh((stage + 1) % 5, power.sub(pAtk));
+    }
+
+    function callNiOHPower(uint256 stage) external pure returns(NFTPartProp memory attack, NFTPartProp memory defend, uint256 power) {
+        power = _niohPower(stage);
+        (attack, defend) = _createNioh(stage, power);
     }
 
     function _addBonus(NFTPartProp memory v1, uint256 bonus) internal pure returns (NFTPartProp memory) {
