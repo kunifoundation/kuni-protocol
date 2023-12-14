@@ -50,7 +50,7 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
     }
 
     function _ask(address nftAddr, uint256 tokenId, uint256 rate) internal {
-        require(rate < PERCENT, "KUNI: Rate < 10000");
+        require(rate <= PERCENT, "KUNI: Rate <= 10000");
         IERC721(nftAddr).transferFrom(msg.sender, address(this), tokenId);
         _nfts[nftAddr][address(this)].add(tokenId);
         _nfts[nftAddr][msg.sender].add(tokenId);

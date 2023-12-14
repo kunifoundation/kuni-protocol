@@ -53,7 +53,7 @@ describe("------------- Staking token ------------------", () => {
         // console.log(tokenIds.map((t) => Number(t)));
         const RATE = 6900;
         // ask scholar tokenId
-        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate < 10000");
+        await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE * 2)).to.revertedWith("KUNI: Rate <= 10000");
         // await expect(this.scholarship.connect(bob).ask(this.saruAddr, 1, 0)).to.revertedWith("KUNI: Rate < 10000");
         // await expect(this.scholarship.connect(bob).ask(ZeroAddress, 1, RATE)).to.revertedWith("function call to a non-contract account");
         await (await this.scholarship.connect(bob).ask(this.saruAddr, 1, RATE)).wait()
