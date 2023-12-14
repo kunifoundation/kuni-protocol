@@ -36,7 +36,7 @@ contract Scholarship is IERC721Receiver, IScholarship, ReentrancyGuard {
 
     function askBatch(address nftAddr, uint256[] calldata tokenIds, uint256[] calldata arrRate) external override nonReentrant {
         for (uint256 inx = 0; inx < tokenIds.length; inx++) {
-                _ask(nftAddr, tokenIds[inx], arrRate[inx]);
+            _ask(nftAddr, tokenIds[inx], arrRate[inx]);
         }
 
         emit AskBatch(msg.sender, nftAddr, tokenIds, arrRate);

@@ -26,5 +26,9 @@ interface IEcoGame {
     function rewardPoint(uint256 stage, bool won, uint256 saru, uint256 item) external view returns (uint256);
     function battleBonusInc(uint256 cBonus) external view returns (uint256 value);
     function getContinentalMultiplierArr(address acc) external view returns (uint256[] memory);
-    function calProductivityTeam(address sender, uint256[] calldata tokenIds, uint256 kuniAmount) external view returns (uint256[] memory);
+    function calProductivityTeam(
+        address sender,
+        uint256[] calldata tokenIds,
+        uint256 kuniAmount
+    ) external view returns (uint256[] memory);
 }

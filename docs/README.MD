@@ -2,28 +2,28 @@
 
 ## EcoGame
 
-### _DECIMALS
+### MAGIC_NUM
 
 ```solidity
-uint256 _DECIMALS
+uint256 MAGIC_NUM
 ```
 
-### KUNI_TOTAL
+### K_BONUS
 
 ```solidity
-uint256 KUNI_TOTAL
+uint256 K_BONUS
 ```
 
-### kBonus
+### MAX_BONUS
 
 ```solidity
-uint256 kBonus
+uint256 MAX_BONUS
 ```
 
-### maxBonus
+### MAGIC_BONUS
 
 ```solidity
-uint256 maxBonus
+uint256 MAGIC_BONUS
 ```
 
 ### constructor
@@ -42,6 +42,12 @@ function productionEfficiency(uint256 tokenId) external view returns (uint256 or
 
 ```solidity
 function productionEfficiencyArr(uint256 tokenId) external view returns (uint256[])
+```
+
+### _productionEfficiencyArr
+
+```solidity
+function _productionEfficiencyArr(uint256 tokenId) internal view returns (uint256[])
 ```
 
 ### productionEfficiencyTeam
@@ -65,7 +71,7 @@ function _niohPower(uint256 stage) internal pure returns (uint256)
 ### advantagePoint
 
 ```solidity
-function advantagePoint(uint256[] tokenIds, address kuniItem, uint256[][] items, uint256 stage, uint256 bonus, uint256 power) external view returns (bool won, uint256 totalItem)
+function advantagePoint(uint256[] tokenIds, address kuniItem, uint256[][] items, uint256 stage, uint256 bonus) external view returns (bool won, uint256 totalItem, uint256 power)
 ```
 
 ### _calPower
@@ -137,19 +143,25 @@ function _materialStasBatch(uint256[] _materials, uint256[] qty) internal view r
 ### battleBonusInc
 
 ```solidity
-function battleBonusInc(uint256 cBonus) external view returns (uint256 value, uint256 decimals)
+function battleBonusInc(uint256 cBonus) external pure returns (uint256 value)
 ```
 
-### calNioh
+### _calNioh
 
 ```solidity
-function calNioh(uint256 indx, uint256 value, uint256 power) internal pure returns (struct IData.NFTPartProp item)
+function _calNioh(uint256 indx, uint256 power) internal pure returns (struct IData.NFTPartProp item)
 ```
 
 ### _createNioh
 
 ```solidity
-function _createNioh(uint256 _stage, uint256 power) internal pure returns (struct IData.NFTPartProp attack, struct IData.NFTPartProp defend)
+function _createNioh(uint256 stage, uint256 power) internal pure returns (struct IData.NFTPartProp attack, struct IData.NFTPartProp defend)
+```
+
+### callNiOHPower
+
+```solidity
+function callNiOHPower(uint256 stage) external pure returns (struct IData.NFTPartProp attack, struct IData.NFTPartProp defend, uint256 power)
 ```
 
 ### _addBonus
@@ -164,6 +176,12 @@ function _addBonus(struct IData.NFTPartProp v1, uint256 bonus) internal pure ret
 function _plusProp(struct IData.NFTPartProp v1, struct IData.NFTPartProp v2) internal pure returns (struct IData.NFTPartProp result)
 ```
 
+### getKuniItemPower
+
+```solidity
+function getKuniItemPower(address kuniItem, uint256[][] items) external view returns (struct IData.NFTPartProp attack, struct IData.NFTPartProp defend, uint256 total)
+```
+
 ### _getKuniItemPower
 
 ```solidity
@@ -176,16 +194,28 @@ function _getKuniItemPower(address kuniItem, uint256[][] items) internal view re
 function rewardPoint(uint256 stage, bool won, uint256 saru, uint256 item) external pure returns (uint256)
 ```
 
-### getContinentalMultiplier
-
-```solidity
-function getContinentalMultiplier(address acc) external view returns (uint256, uint256, uint256, uint256)
-```
-
 ### getContinentalMultiplierArr
 
 ```solidity
-function getContinentalMultiplierArr(address acc) external view returns (uint256[] lands)
+function getContinentalMultiplierArr(address acc) external view returns (uint256[])
+```
+
+### _getContinentalMultiplierArr
+
+```solidity
+function _getContinentalMultiplierArr(address acc) internal view returns (uint256[] lands)
+```
+
+### calProductivityTeam
+
+```solidity
+function calProductivityTeam(address sender, uint256[] tokenIds, uint256 kuniAmount) external view returns (uint256[])
+```
+
+### _calProductivity
+
+```solidity
+function _calProductivity(uint256 amount, uint256 tokenId) internal view returns (uint256[] eff)
 ```
 
 ## MetaData
@@ -218,12 +248,6 @@ mapping(uint256 => struct IData.ItemCraft) itemCrafts
 
 ```solidity
 mapping(uint256 => mapping(uint256 => uint256)) continents
-```
-
-### constructor
-
-```solidity
-constructor() public
 ```
 
 ### addPower
@@ -417,12 +441,6 @@ address coreGame
 address invGame
 ```
 
-### constructor
-
-```solidity
-constructor() public
-```
-
 ### stageOf
 
 ```solidity
@@ -467,10 +485,22 @@ function updateGame(address core, address inv) external
 uint256 MAGIC_NUM
 ```
 
+### PERCENT
+
+```solidity
+uint256 PERCENT
+```
+
 ### kuniStakedOf
 
 ```solidity
 mapping(address => uint256) kuniStakedOf
+```
+
+### getMaterials
+
+```solidity
+address[] getMaterials
 ```
 
 ### userInfo
@@ -542,7 +572,7 @@ uint256 getGenesisTime
 ### constructor
 
 ```solidity
-constructor(uint256 _genesisTime, address kuniSaru_, address kuniItem_, address eco_, address scholar_, address refer) public
+constructor(uint256 genesisTime_, address miningAddr_, address kuniSaru_, address kuniItem_, address eco_, address scholar_, address referral_, address ge_, address foundation_) public
 ```
 
 ### deposit
@@ -551,16 +581,10 @@ constructor(uint256 _genesisTime, address kuniSaru_, address kuniItem_, address 
 function deposit(uint256 kuniAmount, uint256[] tokenIds) external
 ```
 
-### _calProductivityTeam
+### _mUpdateAmount
 
 ```solidity
-function _calProductivityTeam(uint256 amount, uint256[] tokenIds) internal view returns (uint256[])
-```
-
-### _calProductivity
-
-```solidity
-function _calProductivity(uint256 amount, uint256 tokenId) internal view returns (uint256[] eff)
+function _mUpdateAmount(address mToken, uint256 amount) internal
 ```
 
 ### claim
@@ -587,6 +611,18 @@ function withdraw() external
 function fighting(uint256[] tokenIds, uint256[][] itemIds) external
 ```
 
+### fightingAndEarn
+
+```solidity
+function fightingAndEarn(uint256[] tokenIds, uint256[][] itemIds) external
+```
+
+### _fighting
+
+```solidity
+function _fighting(uint256[] tokenIds, uint256[][] itemIds) internal
+```
+
 ### claimGE
 
 ```solidity
@@ -605,22 +641,10 @@ function earnKuni() external
 function _earnKuni(address sender) internal
 ```
 
-### _claimGE
+### _battleKuni
 
 ```solidity
-function _claimGE(address sender) internal
-```
-
-### _fighting
-
-```solidity
-function _fighting(uint256[] tokenIds, uint256[][] itemIds) internal
-```
-
-### _updateBattleBonus
-
-```solidity
-function _updateBattleBonus() internal
+function _battleKuni(uint256[] tokenIds, uint256[][] itemIds) internal
 ```
 
 ### _shareReward
@@ -629,28 +653,22 @@ function _updateBattleBonus() internal
 function _shareReward(uint256 reward, uint256[] tokenIds, uint256[][] itemIds, uint256 totalItem) internal returns (uint256)
 ```
 
-### _saruDuplicate
-
-```solidity
-function _saruDuplicate(uint256[] tokenIds) internal pure returns (bool)
-```
-
 ### _invalidSaru
 
 ```solidity
-function _invalidSaru(uint256[] tokenIds, address sender) internal view returns (bool)
+function _invalidSaru(uint256[] tokenIds) internal view
 ```
 
 ### _invalidKuniItem
 
 ```solidity
-function _invalidKuniItem(uint256[][] itemIds, address sender) internal view returns (bool)
+function _invalidKuniItem(uint256[][] itemIds) internal view
 ```
 
 ### _equipmentCorrect
 
 ```solidity
-function _equipmentCorrect(address owner, uint256 tokenId, uint256 cat, uint256 item) internal view returns (uint256)
+function _equipmentCorrect(address owner, uint256 tokenId, uint256 cat) internal view
 ```
 
 ### tokensBy
@@ -707,28 +725,10 @@ function _mUpdatePool(address mToken) internal
 function _harvest(address mToken, struct IAmaGame.UserInfo user) internal
 ```
 
-### _mDeposit
-
-```solidity
-function _mDeposit(address mToken, address sender, uint256 _amount, uint256 multiplier) internal
-```
-
-### _mWithdraw
-
-```solidity
-function _mWithdraw(address mToken, address sender, uint256 _amount, uint256 multiplier) internal
-```
-
-### _mWithdraw
-
-```solidity
-function _mWithdraw(address mToken) internal
-```
-
 ### _mClaim
 
 ```solidity
-function _mClaim(address mToken, address sender) internal
+function _mClaim(address mToken) internal
 ```
 
 ### pendingReward
@@ -741,18 +741,6 @@ function pendingReward(address mToken, address sender) external view returns (ui
 
 ```solidity
 function geStakedOf(address mToken, address sender) external view returns (uint256)
-```
-
-### materialAt
-
-```solidity
-function materialAt(uint256 index) external view returns (address)
-```
-
-### materials
-
-```solidity
-function materials() external view returns (address[])
 ```
 
 ### _addToken
@@ -779,46 +767,10 @@ function _transfer(address _from, address _to, uint256 _tokenId) internal
 function _transferToken(address mToken, uint256 amount) internal
 ```
 
-### setMining
-
-```solidity
-function setMining(address mining_) external
-```
-
-### setGE
-
-```solidity
-function setGE(address ge_) external
-```
-
-### setFoundation
-
-```solidity
-function setFoundation(address addr) external
-```
-
-### setItem
-
-```solidity
-function setItem(address addr) external
-```
-
 ### setEco
 
 ```solidity
 function setEco(address addr) external
-```
-
-### setReferral
-
-```solidity
-function setReferral(address addr) external
-```
-
-### setScholar
-
-```solidity
-function setScholar(address addr) external
 ```
 
 ### setMaterials
@@ -859,6 +811,18 @@ mapping(address => uint256) materialPic
 mapping(address => uint256) currentCap
 ```
 
+### CAP_INIT
+
+```solidity
+uint256 CAP_INIT
+```
+
+### STEP
+
+```solidity
+uint256 STEP
+```
+
 ### kuniItem
 
 ```solidity
@@ -874,7 +838,7 @@ address miningKuni
 ### constructor
 
 ```solidity
-constructor(address _eco) public
+constructor(address miningAddr_, address eco_, address kuniItem_) public
 ```
 
 ### createKuniItem
@@ -1400,6 +1364,12 @@ function _getTokenIdAt(address nftAddr, address sender, uint256 index) internal 
 function getScholars(address nftAddr, address sender, uint256 start, uint256 limit) external view virtual returns (uint256[], address[], uint256[])
 ```
 
+### transferOwner
+
+```solidity
+function transferOwner(address nftAddr, uint256[] tokenIds, address newOwner) external
+```
+
 ### onERC721Received
 
 ```solidity
@@ -1505,7 +1475,6 @@ struct UserInfo {
   uint256 amount;
   uint256 pendingReward;
   uint256 rewardDebt;
-  uint256 rewardDebtAtBlock;
 }
 ```
 
@@ -1602,7 +1571,7 @@ function mint(address account, uint256 amount) external
 ### safeMint
 
 ```solidity
-function safeMint(address to, string name, uint256[] meta) external
+function safeMint(address to, string name, uint256[] meta, uint256 cat) external
 ```
 
 ### currentId
@@ -1664,7 +1633,7 @@ function niohPower(uint256 stage) external view returns (uint256)
 ### advantagePoint
 
 ```solidity
-function advantagePoint(uint256[] tokenIds, address kuniItem, uint256[][] items, uint256 stage, uint256 bonus, uint256 power) external view returns (bool won, uint256 totalItem)
+function advantagePoint(uint256[] tokenIds, address kuniItem, uint256[][] items, uint256 stage, uint256 bonus) external view returns (bool won, uint256 totalItem, uint256 power)
 ```
 
 ### rewardPoint
@@ -1676,19 +1645,19 @@ function rewardPoint(uint256 stage, bool won, uint256 saru, uint256 item) extern
 ### battleBonusInc
 
 ```solidity
-function battleBonusInc(uint256 cBonus) external view returns (uint256 value, uint256 decimals)
-```
-
-### getContinentalMultiplier
-
-```solidity
-function getContinentalMultiplier(address acc) external view returns (uint256, uint256, uint256, uint256)
+function battleBonusInc(uint256 cBonus) external view returns (uint256 value)
 ```
 
 ### getContinentalMultiplierArr
 
 ```solidity
-function getContinentalMultiplierArr(address acc) external view returns (uint256[] lands)
+function getContinentalMultiplierArr(address acc) external view returns (uint256[])
+```
+
+### calProductivityTeam
+
+```solidity
+function calProductivityTeam(address sender, uint256[] tokenIds, uint256 kuniAmount) external view returns (uint256[])
 ```
 
 ## IMaterial
@@ -2016,12 +1985,6 @@ uint256 MAX_SUPPLY
 uint256 NUM_OF_BLOCK_PER_DAY
 ```
 
-### MAGIC_NUM
-
-```solidity
-uint256 MAGIC_NUM
-```
-
 ### RATE
 
 ```solidity
@@ -2104,12 +2067,6 @@ event Mint(address owner, uint256 tokenId)
 event UpdateName(uint256 tokenId, string name)
 ```
 
-### constructor
-
-```solidity
-constructor() public
-```
-
 ### onlyMinter
 
 ```solidity
@@ -2143,7 +2100,7 @@ function currentId(uint256 eType) external view returns (uint256)
 ### safeMint
 
 ```solidity
-function safeMint(address to, string name, uint256[] meta) external
+function safeMint(address to, string name, uint256[] meta, uint256 cat) external
 ```
 
 ### updateName
