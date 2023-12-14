@@ -365,7 +365,31 @@ describe("------------- Staking token ------------------", () => {
         await fnCraft(bob, ["stone", "cotton"], [5, 2], 1);
         await fnCraft(bob, ["stone", "lumber"], [5, 2], 1);
         await fnCraft(bob, ["cotton", "lumber"], [5, 2], 1);
+        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
+        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
+        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
 
+
+
+        await fnCraft(bob, ["ore"], [2], 0);
+        await fnCraft(bob, ["stone"], [2], 0);
+        await fnCraft(bob, ["cotton"], [6], 0);
+        await fnCraft(bob, ["lumber"], [4], 0);
+
+        await fnCraft(bob, ["ore"], [2], 0);
+        await fnCraft(bob, ["stone"], [2], 0);
+        await fnCraft(bob, ["cotton"], [6], 0);
+        await fnCraft(bob, ["lumber"], [4], 0);
+
+        await fnCraft(bob, ["ore"], [2], 0);
+        await fnCraft(bob, ["stone"], [2], 0);
+        await fnCraft(bob, ["cotton"], [6], 0);
+        await fnCraft(bob, ["lumber"], [4], 0);
+
+        await fnCraft(bob, ["ore"], [2], 0);
+        await fnCraft(bob, ["stone"], [2], 0);
+        await fnCraft(bob, ["cotton"], [6], 0);
+        await fnCraft(bob, ["lumber"], [4], 0);
 
         await fnCraft(bob, ["ore"], [2], 0);
         await fnCraft(bob, ["stone"], [2], 0);
@@ -450,6 +474,22 @@ describe("------------- Staking token ------------------", () => {
 
         await (await this.game.connect(bob).fighting([1, 2, 3], [
             [1,2,0,4,5]
+        ])).wait()
+    })
+
+    it('10. fighting and earn', async function() {
+        await (await this.game.connect(bob).fightingAndEarn([1, 2, 3, 4, 5, 11], [
+            [1,2,3,4,5],
+            [6,7,8,9,10],
+            [11,12,13,14,15],
+            [16,17,18,19,20],
+            [21,22,23,24,25],
+            [26,27,28,29,30]
+        ])).wait()
+
+        await (await this.game.connect(bob).fightingAndEarn([1], [
+        ])).wait()
+        await (await this.game.connect(bob).fightingAndEarn([1], [
         ])).wait()
     })
 });
