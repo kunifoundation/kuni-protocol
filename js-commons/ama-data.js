@@ -53,12 +53,12 @@ module.exports.initPowerEffData = async function(cMetadata) {
 }
 
 // Saru info
-module.exports.initSaruData = async function(cMetadata, min, max) {
+module.exports.initSaruData = async function(cMetadata, min, max, isLog=true) {
   const kuniSaruData = fnReadFile('./kuni-data/KUNI_SARU.csv', '\n')
   const saruData = fnToBatchNftV2(kuniSaruData, min, max)
-  let tx = await cMetadata.addNftBatch(saruData.keys, saruData.vals)
-  await tx.wait()
-  console.log(`Saru Index: ${min} => ${max}`)
+  await (await cMetadata.addNftBatch(saruData.keys, saruData.vals)).wait()
+  if (isLog)
+    console.log(`Saru Index: ${min} => ${max}`)
 }
 
 
@@ -78,12 +78,10 @@ module.exports.initCraftData = async function(cMetadata) {
 
   const craftInfo = fnCraftInfo(data.craft)
     // Props materials
-  let tx = await cMetadata.addMaterials(props.keys, props.vals)
-  await tx.wait()
+  await (await cMetadata.addMaterials(props.keys, props.vals)).wait()
 
   // craft
-  tx = await cMetadata.addItemCraft(craftInfo.names, craftInfo.props)
-  await tx.wait()
+  await (await cMetadata.addItemCraft(craftInfo.names, craftInfo.props)).wait()
 
   // Continental Multiplier
   await (await cMetadata.addContinentalMulBatch(continental.keys, continental.vals)).wait()
@@ -94,8 +92,7 @@ async function cMintNft(kuniSaru, to, k) {
   let tx;
   while (k>0) {
     await sleep(100)
-    tx = await kuniSaru.safeMint(to)
-    await tx.wait()
+    await (await kuniSaru.safeMint(to)).wait()
     await sleep(500)
     k--
   }
