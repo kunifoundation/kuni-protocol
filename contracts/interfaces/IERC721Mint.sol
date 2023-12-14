@@ -2,7 +2,7 @@
 pragma solidity ^0.8.6;
 
 interface IERC721Mint {
-    function safeMint(address to, string memory name, uint256[] memory meta) external;
+    function safeMint(address to, string memory name, uint256[] memory meta, uint256 cat) external;
     function currentId(uint256 eType) external view returns (uint256);
     function getMeta(
         uint256 tokenId

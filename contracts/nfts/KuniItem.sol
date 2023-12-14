@@ -47,13 +47,13 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
         return lastTokenIdOf[eType];
     }
 
-    function safeMint(address to, string memory name, uint256[] memory meta) external override onlyMinter {
-        uint256 tokenId = meta[5];
-        if (lastTokenIdOf[meta[5]] != 0) {
-            tokenId = lastTokenIdOf[meta[5]] + 5;
+    function safeMint(address to, string memory name, uint256[] memory meta, uint256 cat) external override onlyMinter {
+        uint256 tokenId = cat;
+        if (lastTokenIdOf[cat] != 0) {
+            tokenId = lastTokenIdOf[cat] + 5;
         }
-        lastTokenIdOf[meta[5]] = tokenId;
-        _metadata[tokenId] = Meta(name, meta[0], meta[1], meta[2], meta[3], meta[4], meta[5]);
+        lastTokenIdOf[cat] = tokenId;
+        _metadata[tokenId] = Meta(name, meta[0], meta[1], meta[2], meta[3], meta[4], cat);
         _safeMint(to, tokenId);
         emit Mint(to, tokenId);
     }
