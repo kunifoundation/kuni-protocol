@@ -169,7 +169,6 @@ async function main() {
     this.inv.transferOwnership(foundation, {nonce: nonce++})
     this.mining.transferOwnership(foundation, {nonce: nonce++})
     this.referral.transferOwnership(foundation, {nonce: nonce++})
-    this.scholarship.transferOwnership(foundation, {nonce: nonce++})
 
     this.ore.transferOwnership(foundation, {nonce: nonce++})
     this.cotton.transferOwnership(foundation, {nonce: nonce++})
