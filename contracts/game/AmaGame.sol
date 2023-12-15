@@ -96,13 +96,11 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
     function _mUpdateAmount(address mToken, uint256 amount) internal {
         PoolInfo storage pool = pools[mToken];
         UserInfo storage user = userInfo[mToken][msg.sender];
-        if (amount > 0) {
-            _mUpdatePool(mToken);
-            _harvest(mToken, user);
-            pool.supply = pool.supply.sub(user.amount).add(amount);
-            user.amount = amount;
-            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-        }
+        _mUpdatePool(mToken);
+        _harvest(mToken, user);
+        pool.supply = pool.supply.sub(user.amount).add(amount);
+        user.amount = amount;
+        user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
     }
 
     function claim() external override nonReentrant {
