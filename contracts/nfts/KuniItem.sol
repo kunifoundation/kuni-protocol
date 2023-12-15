@@ -26,7 +26,7 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
     address private _minter;
 
     modifier onlyMinter() {
-        require(msg.sender == _minter, "KuniItem: caller is not the minter!");
+        require(msg.sender == _minter, "KUNI: caller is not the minter!");
         _;
     }
 

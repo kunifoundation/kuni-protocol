@@ -24,7 +24,7 @@ contract GreenEnergy is ERC20("GreenEnergy", "GE"), Ownable, IERC20Burnable, IER
     }
 
     modifier onlyMinter() {
-        require(msg.sender == _minter, "AmaMinter: caller is not the minter");
+        require(msg.sender == _minter, "KUNI: caller is not the minter");
         _;
     }
 
