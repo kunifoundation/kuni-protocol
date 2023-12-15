@@ -204,7 +204,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         }
 
         for (uint256 inx = 0; inx < minters.length; inx++) {
-            if (!pool.minters.contains(minters[inx]) && picGE[minters[inx]] == address(0x0)) {
+            if (picGE[minters[inx]] == address(0x0)) {
                 poolInfo[_ge].minters.add(minters[inx]);
                 pool.gasUsed += gasTemp[minters[inx]];
                 totalGasUsed += gasTemp[minters[inx]];
