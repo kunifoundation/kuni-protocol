@@ -40,7 +40,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     mapping(address => PoolInfo) private poolInfo;
     mapping(address => mapping(address => UserInfo)) public userInfo;
     uint256 public totalGasUsed = 0;
-    address[] public getPools;
+    EnumerableSet.AddressSet private _pools;
     mapping(address => uint256) public gasTemp;
     mapping(address => address) public picGE;
     mapping(address => bool) public geSupported;
@@ -63,10 +63,8 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
                 duration = BLOCK_LIMIT;
             }
 
-            uint256 _to = pool.lastRewardBlock + duration;
             return
-                _to
-                    .sub(pool.lastRewardBlock)
+                duration
                     .mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE).mul(pool.gasUsed).div(totalGasUsed))
                     .div(NUM_OF_BLOCK_PER_DAY);
         }
@@ -173,7 +171,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     }
 
     function getPoolsLength() public view returns (uint256) {
-        return getPools.length;
+        return _pools.length();
     }
 
     function getPoolInfo(address _ge) public view returns (uint256, uint256, uint256) {
@@ -197,12 +195,12 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     function addPool(address _ge, address[] calldata minters) external onlyOwner {
         geSupported[_ge] = true;
         PoolInfo storage pool = poolInfo[_ge];
-        for (uint i = 0; i < getPools.length; i++) {
-            _updatePool(getPools[i]);
+        for (uint i = 0; i < _pools.length(); i++) {
+            _updatePool(_pools.at(i));
         }
 
         if (pool.lastRewardBlock == 0) {
-            getPools.push(_ge);
+            _pools.add(_ge);
         }
 
         for (uint256 inx = 0; inx < minters.length; inx++) {
@@ -227,6 +225,18 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
 
     function removePool(address _ge) external onlyOwner {
         geSupported[_ge] = false;
+        PoolInfo storage pool = poolInfo[_ge];
+        _pools.remove(_ge);
+        totalGasUsed = totalGasUsed.sub(pool.gasUsed);
+        pool.gasUsed = 0;
+
+        for (uint256 inx = 0; inx < pool.minters.length(); inx++) {
+            picGE[pool.minters.at(inx)] = address(0);
+        }
+    }
+
+    function getPools() external view returns(address[] memory) {
+        return _pools.values();
     }
 
     modifier _geSupport(address ge) {

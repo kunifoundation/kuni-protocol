@@ -144,7 +144,7 @@ describe("------------- Staking token ------------------", () => {
         await (await this.mining.addCoreGame(await this.game.getAddress())).wait();
 
         await (await this.inv.setMaterialPic(this.mTokenArr, [1, 2, 3, 4])).wait();
-        await (await this.inv.setKuniItem(await this.item.getAddress())).wait();
+        // await (await this.inv.setKuniItem(await this.item.getAddress())).wait();
         await (await this.item.setMinter(await this.inv.getAddress())).wait();
 
         await initPowerEffData(this.meta);
