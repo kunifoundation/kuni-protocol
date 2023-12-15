@@ -426,6 +426,10 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
         eco = IEcoGame(addr);
     }
 
+    function setFoundation(address foundation_) external onlyOwner {
+        foundation = foundation_;
+    }
+
     // // ore, stone, cotton, lumber
     function setMaterials(address[] calldata tokens) external onlyOwner {
         for (uint256 i = 0; i < tokens.length; i++) {
