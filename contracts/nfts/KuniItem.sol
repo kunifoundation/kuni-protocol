@@ -3,12 +3,11 @@ pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "../interfaces/IERC721Mint.sol";
 
-contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Burnable, Pausable, Ownable, IERC721Mint {
+contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Burnable, Ownable, IERC721Mint {
     struct Meta {
         string name;
         uint256 slash;
@@ -35,14 +34,6 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
         _minter = minter_;
     }
 
-    function pause() public onlyOwner {
-        _pause();
-    }
-
-    function unpause() public onlyOwner {
-        _unpause();
-    }
-
     function currentId(uint256 eType) external view override returns (uint256) {
         return lastTokenIdOf[eType];
     }
@@ -56,14 +47,6 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
         _metadata[tokenId] = Meta(name, meta[0], meta[1], meta[2], meta[3], meta[4], cat);
         _safeMint(to, tokenId);
         emit Mint(to, tokenId);
-    }
-
-    function updateName(uint256 tokenId, string memory name) external onlyOwner {
-        Meta memory meta = _metadata[tokenId];
-        require(keccak256(abi.encodePacked(meta.name)) == keccak256(abi.encodePacked("")), "KUNI: CODE_EMPTY");
-        meta.name = name;
-        _metadata[tokenId] = meta;
-        emit UpdateName(tokenId, name);
     }
 
     function getMeta(
@@ -83,7 +66,7 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
         address to,
         uint256 tokenId,
         uint256 batchSize
-    ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
+    ) internal override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
