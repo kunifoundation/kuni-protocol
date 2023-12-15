@@ -149,7 +149,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         return _materialStasBatch(_mPic, qty);
     }
 
-    function _primaryStat(uint256[] calldata items) internal pure returns (uint256 m1) {
+    function _primaryStat(uint256[] memory items) internal pure returns (uint256 m1) {
         m1 = 0;
         for (uint256 inx = 1; inx < items.length - 1; inx++) {
             if (items[m1] < items[inx]) {
@@ -158,7 +158,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         }
     }
 
-    function _secondaryStat(uint256[] calldata items, uint256 m1) internal pure returns (uint256 m2) {
+    function _secondaryStat(uint256[] memory items, uint256 m1) internal pure returns (uint256 m2) {
         uint256 val = type(uint256).min;
         for (uint256 inx = 0; inx < items.length; inx++) {
             if (inx == m1) continue;
@@ -169,7 +169,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         }
     }
 
-    function _minorStat(uint256[] calldata items, uint256 m1, uint256 m2) internal pure returns (uint256 m3) {
+    function _minorStat(uint256[] memory items, uint256 m1, uint256 m2) internal pure returns (uint256 m3) {
         uint256 val = type(uint256).min;
         for (uint256 inx = 0; inx < items.length; inx++) {
             if (inx == m1 || inx == m2) continue;
@@ -180,10 +180,10 @@ contract EcoGame is IEcoGame, Ownable, IData {
         }
     }
 
-    function toCraftNameCat(
-        uint256[] calldata items,
-        uint8 attack
-    ) external view override returns (string memory name, uint256 cat) {
+    function _toCraftNameCat(
+        uint256[] memory items,
+        uint256 attack
+    ) internal view returns (string memory name, uint256 cat) {
         uint256 rs = 0;
         uint256 m1 = _primaryStat(items);
         uint256 m2 = _secondaryStat(items, m1);
@@ -345,6 +345,14 @@ contract EcoGame is IEcoGame, Ownable, IData {
         lands[1] = meta.getContinentalMultiplier(land, 2);
         lands[2] = meta.getContinentalMultiplier(land, 3);
         lands[3] = meta.getContinentalMultiplier(land, 4);
+    }
+
+    function callCraft(uint256[] calldata _mPic, uint256[] calldata amounts, uint256 cap, uint256 total, uint256 attack) external override view returns(string memory name, uint256[] memory stats, uint256 cat) {
+        require(total > 0 && total <= cap.mul(1 ether), "KUNI: Materials Limit reached. Please reduce the number of materials");
+        stats = _materialStasBatch(_mPic, amounts); // slash, heavy, strike, tech, magic
+        (name, cat) = _toCraftNameCat(stats, attack);
+        require(cat > 0 && cat < 6, "KUNI: Unable to process request");
+        require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "KUNI: NAME_EMPTY");
     }
 
     function calProductivityTeam(
