@@ -6,7 +6,7 @@ const log = console.log;
 
 const {ZeroAddress} = ethers;
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- REFERRAL ------------------", () => {
     let developer, bob, alex, jame;
     let tx;
 

@@ -22,7 +22,7 @@ function exData(expected, actual, fix, decimal = 18) {
     }
 }
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- METADATA ------------------", () => {
     let deployer, bob, alex;
     let tx;
     before(async function () {

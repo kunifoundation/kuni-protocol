@@ -9,7 +9,7 @@ const e100 = parseEther("100");
 const e50 = parseEther("50");
 const log = console.log;
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- MATERIAL ------------------", () => {
     let owner, bob, alex;
     let tx;
     before(async function () {

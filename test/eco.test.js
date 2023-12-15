@@ -19,7 +19,7 @@ function exData(expected, actual, fix) {
     }
 }
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- ECO GAME ------------------", () => {
     let deployer, bob, alex, addrs;
     let tx;
     before(async function () {

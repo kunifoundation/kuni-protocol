@@ -69,7 +69,7 @@ async function logMaterials(self, acc) {
     await logMaterialsAddr(self, acc.address);
 }
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- STAKING TOKEN & SARU ------------------", () => {
     let deployer, bob, alex, axi, founder;
     let tx;
     before(async function () {

@@ -15,7 +15,7 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- MINING KUNI ------------------", () => {
     let owner, bob, alex;
     let tx;
     before(async function () {

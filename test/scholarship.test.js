@@ -13,7 +13,7 @@ async function approveNft(token, acc, operator) {
     }
 }
 
-describe("------------- Staking token ------------------", () => {
+describe("------------- SCHOLARSHIP ------------------", () => {
     let owner, bob, alex, axi;
     let tx;
     before(async function () {
