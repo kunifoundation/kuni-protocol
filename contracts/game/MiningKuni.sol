@@ -21,7 +21,6 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         uint256 amount;
         uint256 rewardDebt;
         uint256 pendingReward;
-        uint256 rewardDebtAtBlock;
     }
 
     struct PoolInfo {
@@ -45,7 +44,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     mapping(address => uint256) public gasTemp;
     mapping(address => address) public picGE;
     mapping(address => bool) public geSupported;
-    address public coreGame;
+    EnumerableSet.AddressSet private _coreGame;
 
     uint256 private gasBlock;
     uint256 private initialGas;
@@ -94,12 +93,9 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     function _harvest(address _ge, address sender) internal {
         PoolInfo storage pool = poolInfo[_ge];
         UserInfo storage user = userInfo[_ge][sender];
-        if (user.rewardDebtAtBlock < block.number) {
-            uint256 reward = (user.amount.mul(pool.rewardPerShare)).div(MAGIC_NUM).sub(user.rewardDebt);
-            user.pendingReward = user.pendingReward.add(reward);
-            user.rewardDebtAtBlock = block.number;
-            user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
-        }
+        uint256 reward = (user.amount.mul(pool.rewardPerShare)).div(MAGIC_NUM).sub(user.rewardDebt);
+        user.pendingReward = user.pendingReward.add(reward);
+        user.rewardDebt = user.amount.mul(pool.rewardPerShare).div(MAGIC_NUM);
     }
 
     function mineKuni(address _ge, uint256 _amount) external override _geSupport(_ge) nonReentrant {
@@ -187,29 +183,19 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
 
     function pendingReward(address _ge, address sender) external view returns (uint256) {
         UserInfo storage user = userInfo[_ge][sender];
-        if (user.amount > 0) {
-            PoolInfo storage pool = poolInfo[_ge];
-            uint256 pendingAmount = user.pendingReward;
-            if (pool.lastRewardBlock <= block.number) {
-                // uint256 duration = block.number - pool.lastRewardBlock;
-                // if (duration > BLOCK_LIMIT) {
-                //     duration = BLOCK_LIMIT;
-                // }
-
-                uint256 geSupply = IERC20(_ge).balanceOf(address(this));
-                uint256 estimateRewardPool = getPoolReward(_ge);
-                uint256 shareRewardPending = pool.rewardPerShare.add(estimateRewardPool.mul(MAGIC_NUM).div(geSupply));
-                pendingAmount = pendingAmount + (user.amount.mul(shareRewardPending).div(MAGIC_NUM)).sub(user.rewardDebt);
-            }
-            return pendingAmount;
+        PoolInfo storage pool = poolInfo[_ge];
+        uint256 pendingAmount = user.pendingReward;
+        uint256 geSupply = IERC20(_ge).balanceOf(address(this));
+        if (geSupply > 0) {
+            uint256 estimateRewardPool = getPoolReward(_ge);
+            uint256 shareRewardPending = pool.rewardPerShare.add(estimateRewardPool.mul(MAGIC_NUM).div(geSupply));
+            pendingAmount = pendingAmount.add((user.amount.mul(shareRewardPending).div(MAGIC_NUM)).sub(user.rewardDebt));
         }
-        return 0;
+        return pendingAmount;
     }
 
     function addPool(address _ge, address[] calldata minters) external onlyOwner {
-        if (!geSupported[_ge]) {
-            geSupported[_ge] = true;
-        }
+        geSupported[_ge] = true;
         PoolInfo storage pool = poolInfo[_ge];
         for (uint i = 0; i < getPools.length; i++) {
             _updatePool(getPools[i]);
@@ -231,8 +217,16 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         pool.lastRewardBlock = block.number;
     }
 
-    function addCoreGame(address core) external onlyOwner {
-        coreGame = core;
+    function addCoreGame(address gameAddr) external onlyOwner {
+        _coreGame.add(gameAddr);
+    }
+
+    function removeCoreGame(address gameAddr) external onlyOwner {
+        _coreGame.remove(gameAddr);
+    }
+
+    function removePool(address _ge) external onlyOwner {
+        geSupported[_ge] = false;
     }
 
     modifier _geSupport(address ge) {
@@ -241,7 +235,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
     }
 
     modifier _onlyCoreGame() {
-        require(msg.sender == coreGame, "KUNI: caller is not the CoreGame AmaKuni!");
+        require(_coreGame.contains(msg.sender), "KUNI: caller is not the CoreGame AmaKuni!");
         _;
     }
 

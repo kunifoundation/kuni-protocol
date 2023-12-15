@@ -379,10 +379,13 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
     function pendingReward(address mToken, address sender) external view returns (uint256) {
         PoolInfo storage pool = pools[mToken];
         UserInfo storage user = userInfo[mToken][sender];
-        uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
-        uint256 share = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
-        uint256 reward = (user.amount.mul(share).div(MAGIC_NUM)).sub(user.rewardDebt);
-        return reward + user.pendingReward;
+        uint256 reward = user.pendingReward;
+        if (pool.supply > 0) {
+            uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
+            uint256 share = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
+            reward = reward.add((user.amount.mul(share).div(MAGIC_NUM)).sub(user.rewardDebt));
+        }
+        return reward;
     }
 
     function geStakedOf(address mToken, address sender) external view returns (uint256) {
