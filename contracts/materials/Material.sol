@@ -23,7 +23,6 @@ contract Material is ERC20, Ownable, IMaterial {
     }
 
     function getRewardForMiner(uint256 _from, uint256 _to) external view override returns (uint256) {
-        if (_from >= _to) return 0;
         return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
     }
 
@@ -33,8 +32,6 @@ contract Material is ERC20, Ownable, IMaterial {
     }
 
     function setMinter(address minter_) public onlyOwner {
-        if (minter == address(0x0)) {
-            minter = minter_;
-        }
+        minter = minter_;
     }
 }
