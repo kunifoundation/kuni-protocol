@@ -2,12 +2,15 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "../interfaces/IERC721Mint.sol";
 
 contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Burnable, Ownable, IERC721Mint {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     struct Meta {
         string name;
         uint256 slash;
@@ -23,16 +26,7 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
     event Mint(address indexed owner, uint256 tokenId);
     event UpdateName(uint256 indexed tokenId, string name);
     mapping(uint256 => Meta) private _metadata;
-    address private _minter;
-
-    modifier onlyMinter() {
-        require(msg.sender == _minter, "KUNI: caller is not the minter!");
-        _;
-    }
-
-    function setMinter(address minter_) public onlyOwner {
-        _minter = minter_;
-    }
+    EnumerableSet.AddressSet private _minter;
 
     function currentId(uint256 eType) external view override returns (uint256) {
         return lastTokenIdOf[eType];
@@ -81,5 +75,22 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
 
     function _baseURI() internal view override returns (string memory) {
         return url;
+    }
+
+    modifier onlyMinter() {
+        require(_minter.contains(msg.sender), "KUNI: caller is not the minter");
+        _;
+    }
+
+    function addMinter(address minter_) public onlyOwner {
+        _minter.add(minter_);
+    }
+
+    function removeMinter(address minter_) public onlyOwner {
+        _minter.remove(minter_);
+    }
+
+    function getMinters() external view returns (address[] memory){
+        return _minter.values();
     }
 }

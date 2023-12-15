@@ -27,7 +27,7 @@ describe("------------- MINING KUNI ------------------", () => {
         // this.ge2    = await (await deployContract('GreenEnergy', [owner.address])).waitForDeployment();
         this.mining = await (await deployContract("MiningKuni")).waitForDeployment();
 
-        await (await this.ge.setMinter(await owner.getAddress())).wait();
+        await (await this.ge.addMinter(await owner.getAddress())).wait();
 
         tx = await this.ge.mint(bob.address, e100);
         await tx.wait();

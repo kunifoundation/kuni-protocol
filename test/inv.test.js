@@ -129,12 +129,12 @@ describe("------------- INVENTORY ------------------", () => {
         this.mTokenArr = _.values(this.mTokens);
         // console.log(this.mTokenArr);
 
-        await (await this.ore.setMinter(this.gameAddr)).wait();
-        await (await this.stone.setMinter(this.gameAddr)).wait();
-        await (await this.cotton.setMinter(this.gameAddr)).wait();
-        await (await this.lumber.setMinter(this.gameAddr)).wait();
+        await (await this.ore.addMinter(this.gameAddr)).wait();
+        await (await this.stone.addMinter(this.gameAddr)).wait();
+        await (await this.cotton.addMinter(this.gameAddr)).wait();
+        await (await this.lumber.addMinter(this.gameAddr)).wait();
 
-        await (await this.ge.setMinter(this.gameAddr)).wait();
+        await (await this.ge.addMinter(this.gameAddr)).wait();
 
         expect(await this.game.getMaterials(0)).to.be.eq(ZeroAddress);
         expect(await this.game.getMaterials(1)).to.be.eq(ZeroAddress);
@@ -148,7 +148,7 @@ describe("------------- INVENTORY ------------------", () => {
         await (await this.mining.addCoreGame(await this.game.getAddress())).wait();
 
         await (await this.inv.setMaterialPic(this.mTokenArr, [1, 2, 3, 4])).wait();
-        await (await this.item.setMinter(await this.inv.getAddress())).wait();
+        await (await this.item.addMinter(await this.inv.getAddress())).wait();
 
         await initPowerEffData(this.meta);
         await initCraftData(this.meta);

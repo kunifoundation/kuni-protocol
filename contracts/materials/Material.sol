@@ -4,11 +4,16 @@ pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../interfaces/IMaterial.sol";
 
 contract Material is ERC20, Ownable, IMaterial {
     using SafeMath for uint256;
+    using EnumerableSet for EnumerableSet.AddressSet;
+    
+    EnumerableSet.AddressSet private _minter;
+
     uint256 MAX_SUPPLY = 21000000 ether / 4;
     uint256 NUM_OF_BLOCK_PER_DAY = 28800;
     uint256 RATE = 5;
@@ -27,11 +32,19 @@ contract Material is ERC20, Ownable, IMaterial {
     }
 
     modifier onlyMinter() {
-        require(msg.sender == minter, "KUNI: caller is not the minter");
+        require(_minter.contains(msg.sender), "KUNI: caller is not the minter");
         _;
     }
 
-    function setMinter(address minter_) public onlyOwner {
-        minter = minter_;
+    function addMinter(address minter_) public onlyOwner {
+        _minter.add(minter_);
+    }
+
+    function removeMinter(address minter_) public onlyOwner {
+        _minter.remove(minter_);
+    }
+
+    function getMinters() external view returns (address[] memory){
+        return _minter.values();
     }
 }

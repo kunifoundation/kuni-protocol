@@ -174,6 +174,10 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         return _pools.length();
     }
 
+    function getPools() external view returns(address[] memory) {
+        return _pools.values();
+    }
+
     function getPoolInfo(address _ge) public view returns (uint256, uint256, uint256) {
         PoolInfo storage pool = poolInfo[_ge];
         return (pool.gasUsed, pool.rewardPerShare, pool.lastRewardBlock);
@@ -233,10 +237,6 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         for (uint256 inx = 0; inx < pool.minters.length(); inx++) {
             picGE[pool.minters.at(inx)] = address(0);
         }
-    }
-
-    function getPools() external view returns(address[] memory) {
-        return _pools.values();
     }
 
     modifier _geSupport(address ge) {

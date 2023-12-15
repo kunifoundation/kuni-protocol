@@ -111,14 +111,14 @@ async function main() {
     log("03. Config kuni inv...");
     await (await this.inv.setMaterialPic([TOKENS.ore, TOKENS.stone, TOKENS.cotton, TOKENS.lumber], [1, 2, 3, 4], {nonce: ++nonce})).wait();
     log("04. Config kuni item...");
-    await (await this.kuniItem.setMinter(TOKENS.amaInv, {nonce: ++nonce})).wait();
+    await (await this.kuniItem.addMinter(TOKENS.amaInv, {nonce: ++nonce})).wait();
     await (await kuniItem.setBaseUrl(metaItemURL, {nonce: ++nonce})).wait();
     log("05. Config minter for token...");
-    await (await this.ore.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
-    await (await this.stone.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
-    await (await this.cotton.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
-    await (await this.lumber.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
-    await (await this.ge.setMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
+    await (await this.ore.addMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
+    await (await this.stone.addMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
+    await (await this.cotton.addMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
+    await (await this.lumber.addMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
+    await (await this.ge.addMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
 
     log("06. ========== INIT DATA =========");
     log("- Init power eff");
