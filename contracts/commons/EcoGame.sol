@@ -351,8 +351,6 @@ contract EcoGame is IEcoGame, Ownable, IData {
         require(total > 0 && total <= cap.mul(1 ether), "KUNI: Materials Limit reached. Please reduce the number of materials");
         stats = _materialStasBatch(_mPic, amounts); // slash, heavy, strike, tech, magic
         (name, cat) = _toCraftNameCat(stats, attack);
-        require(cat > 0 && cat < 6, "KUNI: Unable to process request");
-        require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "KUNI: NAME_EMPTY");
     }
 
     function calProductivityTeam(

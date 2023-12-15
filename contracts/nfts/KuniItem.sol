@@ -33,6 +33,8 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
     }
 
     function safeMint(address to, string memory name, uint256[] memory meta, uint256 cat) external override onlyMinter {
+        require(cat > 0 && cat < 6, "KUNI: Unable to process request");
+        require(keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked("")), "KUNI: NAME_EMPTY");
         uint256 tokenId = cat;
         if (lastTokenIdOf[cat] != 0) {
             tokenId = lastTokenIdOf[cat] + 5;
