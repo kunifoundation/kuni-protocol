@@ -7,8 +7,14 @@ function toTokens(data, json) {
   let rs = "";
   if (json === 'json') {
     rs = "{\n"
+    let isFirst = true
     for(const key in data) {
-      rs += `\t${key}: "${data[key]}",\n`
+        if (isFirst) {
+            rs += `\t"${key}": "${data[key]}"`
+            isFirst = false
+        } else {
+            rs += `, "${key}": "${data[key]}"`
+        }
     }
   } else {
     rs = 'module.exports = {\n'

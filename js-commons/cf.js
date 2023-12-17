@@ -1,1 +1,1 @@
-module.exports.FOLDER_EXPORT = './scripts/_v4/'
+module.exports.FOLDER_EXPORT = './scripts/'

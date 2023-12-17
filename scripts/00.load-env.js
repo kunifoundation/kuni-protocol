@@ -1,0 +1,8 @@
+module.exports = { 
+    IS_TESTNET: true,
+    FOUNDATION_ADDR: "0xD0eE5b7b9eB03eD630BdFcfb9A5b656773139C55", 
+    GENESIS_TIME: 1704250800, // 2024-01-03 10:00:00 GMT+07:00
+    REF_ROOT: "AMAKUNI",
+    KUNI_SARU_ADDR: "0x5fa891e95c948288A376C92fbd3AFc83D488d5a8",
+    META_ITEM_URL: "https://api.amakuni.com/api/kuni-item/"
+}

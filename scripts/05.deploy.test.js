@@ -1,10 +1,13 @@
 const {ethers} = require("hardhat");
 const {mine} = require("@nomicfoundation/hardhat-network-helpers");
 const _ = require("lodash");
+const loadContract = require('./attach-contract')
+const TOKENS = require('./contract.json')
 const {cMintNft} = require("../js-commons/ama-data");
-const {formatEther, parseUnits, toNumber} = require("ethers");
+const {formatEther} = require("ethers");
+const { IS_TESTNET, REF_ROOT, FOUNDATION_ADDR } = require("./00.load-env");
 
-const {parseEther, MaxUint256, ZeroAddress} = ethers;
+const {parseEther, MaxUint256} = ethers;
 
 const log = console.log;
 function sleep(ms) {
@@ -26,14 +29,14 @@ async function approvedNFT(nft, acc, spender) {
     }
 }
 
-async function mainTest(core) {
-    log("======== TEST GAME ========");
-    const {
-        TOKENS,
-        REF_ROOT,
-        foundation,
-        ACC: {alex, bob, wFounder},
-    } = core;
+async function main({ alex, bob, wFounder }) {
+    log("\n======== TEST GAME ON TESTNET ========");
+    const core = await loadContract()
+    let foundation = FOUNDATION_ADDR;
+    if (IS_TESTNET) {
+        foundation = wFounder.address
+    }
+
     // Mint saru
     await cMintNft(core.saru, alex, 5);
     await cMintNft(core.saru, bob, 5);
@@ -100,17 +103,29 @@ async function mainTest(core) {
     log("02. fighting with kuniItem.....");
     await (await core.game.connect(alex).fighting([6], [[0,0,0,0,5]])).wait();
     await (await core.game.connect(alex).earnKuni()).wait();
-    await (await core.mining.connect(bob).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, bob.address))).wait();
-    await (await core.mining.connect(alex).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, bob.address))).wait();
-    log("Bob Claimed $Kuni: ", formatEther(await core.mining.balanceOf(bob.address)));
-    await (await core.mining.connect(wFounder).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, wFounder.address))).wait();
-    log("====== FOUNDATION ======");
-    log("$GE", formatEther(await core.game.unclaimedGE(foundation)));
-    log("$Hash rate: ", formatEther(await core.mining.geStakedOf(TOKENS.ge, foundation)));
-    log("$Kuni pending: ", formatEther(await core.mining.pendingReward(TOKENS.ge, foundation)));
-    log("$Kuni: ", formatEther(await core.mining.balanceOf(foundation)));
-    log("$kuni in pool", formatEther(await core.mining.balanceOf(TOKENS.kuni)));
-    log("$GE", formatEther(await core.ge.balanceOf(TOKENS.ge)));
+    
+    async function claimKuni(acc, accTitle) {
+        log(`\n====== ${accTitle} ====== ${acc.address}`);
+        await (await core.mining.connect(acc).claimKuni(TOKENS.ge, await core.mining.geStakedOf(TOKENS.ge, acc.address))).wait();
+        await (await core.game.connect(acc).claim()).wait()
+        log("$GE IN GAME", formatEther(await core.game.unclaimedGE(acc.address)));
+        log("$Hash rate: ", formatEther(await core.mining.geStakedOf(TOKENS.ge, acc.address)));
+        log("$Kuni pending: ", formatEther(await core.mining.pendingReward(TOKENS.ge, acc.address)));
+        log("$Ore pending: ", formatEther(await core.game.pendingReward(TOKENS.ore, acc.address)));
+        log("$Ore: ", formatEther(await core.ore.balanceOf(acc.address)));
+        log("$Kuni Owner: ", formatEther(await core.mining.balanceOf(acc.address)));
+        log("$kuni in pool", formatEther(await core.mining.balanceOf(TOKENS.kuni)));
+        log("$GE IN POOL", formatEther(await core.ge.balanceOf(TOKENS.kuni)));
+    }
+    log("\n\n$GE IN POOL ===> ", formatEther(await core.ge.balanceOf(TOKENS.kuni)));
+    await claimKuni(bob, "BOB")
+    await claimKuni(alex, "ALEX")
+    await claimKuni(wFounder, "FOUNDATION")    
 }
 
-module.exports = mainTest;
+if (!IS_TESTNET)
+    main()
+        .catch((err) => log(err))
+        .then(() => log("========= TESTED! ========="));
+
+module.exports.testGameInTestnet = main;
