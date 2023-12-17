@@ -11,7 +11,7 @@ import "../interfaces/IMaterial.sol";
 contract Material is ERC20, Ownable, IMaterial {
     using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
-    
+
     EnumerableSet.AddressSet private _minter;
 
     uint256 MAX_SUPPLY = 21000000 ether / 4;
@@ -44,7 +44,7 @@ contract Material is ERC20, Ownable, IMaterial {
         _minter.remove(minter_);
     }
 
-    function getMinters() external view returns (address[] memory){
+    function getMinters() external view returns (address[] memory) {
         return _minter.values();
     }
 }

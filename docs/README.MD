@@ -122,10 +122,10 @@ function _secondaryStat(uint256[] items, uint256 m1) internal pure returns (uint
 function _minorStat(uint256[] items, uint256 m1, uint256 m2) internal pure returns (uint256 m3)
 ```
 
-### toCraftNameCat
+### _toCraftNameCat
 
 ```solidity
-function toCraftNameCat(uint256[] items, uint8 attack) external view returns (string name, uint256 cat)
+function _toCraftNameCat(uint256[] items, uint256 attack) internal view returns (string name, uint256 cat)
 ```
 
 ### _materialStas
@@ -204,6 +204,12 @@ function getContinentalMultiplierArr(address acc) external view returns (uint256
 
 ```solidity
 function _getContinentalMultiplierArr(address acc) internal view returns (uint256[] lands)
+```
+
+### callCraft
+
+```solidity
+function callCraft(uint256[] _mPic, uint256[] amounts, uint256 cap, uint256 total, uint256 attack) external view returns (string name, uint256[] stats, uint256 cat)
 ```
 
 ### calProductivityTeam
@@ -773,6 +779,12 @@ function _transferToken(address mToken, uint256 amount) internal
 function setEco(address addr) external
 ```
 
+### setFoundation
+
+```solidity
+function setFoundation(address foundation_) external
+```
+
 ### setMaterials
 
 ```solidity
@@ -841,12 +853,6 @@ address miningKuni
 constructor(address miningAddr_, address eco_, address kuniItem_) public
 ```
 
-### createKuniItem
-
-```solidity
-function createKuniItem() external
-```
-
 ### craft
 
 ```solidity
@@ -877,18 +883,6 @@ function setMaterialPic(address[] materialAddr, uint256[] pic) external
 function setEco(address eco_) external
 ```
 
-### setKuniItem
-
-```solidity
-function setKuniItem(address addr) external
-```
-
-### setMining
-
-```solidity
-function setMining(address mining_) external
-```
-
 ### currentCapOf
 
 ```solidity
@@ -904,7 +898,6 @@ struct UserInfo {
   uint256 amount;
   uint256 rewardDebt;
   uint256 pendingReward;
-  uint256 rewardDebtAtBlock;
 }
 ```
 
@@ -967,12 +960,6 @@ mapping(address => mapping(address => struct MiningKuni.UserInfo)) userInfo
 uint256 totalGasUsed
 ```
 
-### getPools
-
-```solidity
-address[] getPools
-```
-
 ### gasTemp
 
 ```solidity
@@ -989,12 +976,6 @@ mapping(address => address) picGE
 
 ```solidity
 mapping(address => bool) geSupported
-```
-
-### coreGame
-
-```solidity
-address coreGame
 ```
 
 ### kuniBlock
@@ -1075,6 +1056,12 @@ function _gasEnd() internal
 function getPoolsLength() public view returns (uint256)
 ```
 
+### getPools
+
+```solidity
+function getPools() external view returns (address[])
+```
+
 ### getPoolInfo
 
 ```solidity
@@ -1096,7 +1083,19 @@ function addPool(address _ge, address[] minters) external
 ### addCoreGame
 
 ```solidity
-function addCoreGame(address core) external
+function addCoreGame(address gameAddr) external
+```
+
+### removeCoreGame
+
+```solidity
+function removeCoreGame(address gameAddr) external
+```
+
+### removePool
+
+```solidity
+function removePool(address _ge) external
 ```
 
 ### _geSupport
@@ -1618,10 +1617,10 @@ function materialStas(uint256 pic, uint256 qty) external view returns (uint256[]
 function materialStasBatch(uint256[] _materials, uint256[] qty) external view returns (uint256[])
 ```
 
-### toCraftNameCat
+### callCraft
 
 ```solidity
-function toCraftNameCat(uint256[] items, uint8 attack) external view returns (string name, uint256 cat)
+function callCraft(uint256[] _mPic, uint256[] amounts, uint256 cap, uint256 total, uint256 attack) external view returns (string name, uint256[] stats, uint256 cat)
 ```
 
 ### niohPower
@@ -1965,10 +1964,22 @@ function burnFrom(address account, uint256 amount) external virtual
 modifier onlyMinter()
 ```
 
-### setMinter
+### addMinter
 
 ```solidity
-function setMinter(address minter_) public
+function addMinter(address minter_) public
+```
+
+### removeMinter
+
+```solidity
+function removeMinter(address minter_) public
+```
+
+### getMinters
+
+```solidity
+function getMinters() external view returns (address[])
 ```
 
 ## Material
@@ -2027,10 +2038,22 @@ function getRewardForMiner(uint256 _from, uint256 _to) external view returns (ui
 modifier onlyMinter()
 ```
 
-### setMinter
+### addMinter
 
 ```solidity
-function setMinter(address minter_) public
+function addMinter(address minter_) public
+```
+
+### removeMinter
+
+```solidity
+function removeMinter(address minter_) public
+```
+
+### getMinters
+
+```solidity
+function getMinters() external view returns (address[])
 ```
 
 ## KuniItem
@@ -2067,30 +2090,6 @@ event Mint(address owner, uint256 tokenId)
 event UpdateName(uint256 tokenId, string name)
 ```
 
-### onlyMinter
-
-```solidity
-modifier onlyMinter()
-```
-
-### setMinter
-
-```solidity
-function setMinter(address minter_) public
-```
-
-### pause
-
-```solidity
-function pause() public
-```
-
-### unpause
-
-```solidity
-function unpause() public
-```
-
 ### currentId
 
 ```solidity
@@ -2101,12 +2100,6 @@ function currentId(uint256 eType) external view returns (uint256)
 
 ```solidity
 function safeMint(address to, string name, uint256[] meta, uint256 cat) external
-```
-
-### updateName
-
-```solidity
-function updateName(uint256 tokenId, string name) external
 ```
 
 ### getMeta
@@ -2142,6 +2135,30 @@ function _baseURI() internal view returns (string)
 _Base URI for computing {tokenURI}. If set, the resulting URI for each
 token will be the concatenation of the `baseURI` and the `tokenId`. Empty
 by default, can be overridden in child contracts._
+
+### onlyMinter
+
+```solidity
+modifier onlyMinter()
+```
+
+### addMinter
+
+```solidity
+function addMinter(address minter_) public
+```
+
+### removeMinter
+
+```solidity
+function removeMinter(address minter_) public
+```
+
+### getMinters
+
+```solidity
+function getMinters() external view returns (address[])
+```
 
 ## KuniSaru
 

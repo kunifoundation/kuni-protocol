@@ -38,7 +38,7 @@ contract GreenEnergy is ERC20("GreenEnergy", "GE"), Ownable, IERC20Burnable, IER
         _minter.remove(minter_);
     }
 
-    function getMinters() external view returns (address[] memory){
+    function getMinters() external view returns (address[] memory) {
         return _minter.values();
     }
 }

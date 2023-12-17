@@ -64,9 +64,9 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
             }
 
             return
-                duration
-                    .mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE).mul(pool.gasUsed).div(totalGasUsed))
-                    .div(NUM_OF_BLOCK_PER_DAY);
+                duration.mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE).mul(pool.gasUsed).div(totalGasUsed)).div(
+                    NUM_OF_BLOCK_PER_DAY
+                );
         }
 
         return 0;
@@ -174,7 +174,7 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         return _pools.length();
     }
 
-    function getPools() external view returns(address[] memory) {
+    function getPools() external view returns (address[] memory) {
         return _pools.values();
     }
 

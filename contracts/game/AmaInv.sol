@@ -17,7 +17,7 @@ contract AmaInv is IAmaInv, Ownable, ReentrancyGuard {
 
     mapping(address => uint256) public materialPic;
     mapping(address => uint256) public currentCap;
-    
+
     uint256 CAP_INIT = 20;
     uint256 STEP = 2;
 

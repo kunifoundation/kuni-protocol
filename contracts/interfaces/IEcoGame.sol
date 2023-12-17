@@ -13,8 +13,15 @@ interface IEcoGame {
 
     function materialStas(uint256 pic, uint256 qty) external view returns (uint256[] memory);
     function materialStasBatch(uint256[] calldata _materials, uint256[] calldata qty) external view returns (uint256[] memory);
+
     // function toCraftNameCat(uint256[] calldata items, uint8 attack) external view returns (string memory name, uint256 cat);
-    function callCraft(uint256[] calldata _mPic, uint256[] calldata amounts, uint256 cap, uint256 total, uint256 attack) external view returns(string memory name, uint256[] memory stats, uint256 cat);
+    function callCraft(
+        uint256[] calldata _mPic,
+        uint256[] calldata amounts,
+        uint256 cap,
+        uint256 total,
+        uint256 attack
+    ) external view returns (string memory name, uint256[] memory stats, uint256 cat);
 
     function niohPower(uint256 stage) external view returns (uint256);
     function advantagePoint(

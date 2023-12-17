@@ -92,7 +92,7 @@ contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Bur
         _minter.remove(minter_);
     }
 
-    function getMinters() external view returns (address[] memory){
+    function getMinters() external view returns (address[] memory) {
         return _minter.values();
     }
 }

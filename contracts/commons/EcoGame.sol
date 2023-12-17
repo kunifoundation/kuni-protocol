@@ -180,10 +180,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         }
     }
 
-    function _toCraftNameCat(
-        uint256[] memory items,
-        uint256 attack
-    ) internal view returns (string memory name, uint256 cat) {
+    function _toCraftNameCat(uint256[] memory items, uint256 attack) internal view returns (string memory name, uint256 cat) {
         uint256 rs = 0;
         uint256 m1 = _primaryStat(items);
         uint256 m2 = _secondaryStat(items, m1);
@@ -347,7 +344,13 @@ contract EcoGame is IEcoGame, Ownable, IData {
         lands[3] = meta.getContinentalMultiplier(land, 4);
     }
 
-    function callCraft(uint256[] calldata _mPic, uint256[] calldata amounts, uint256 cap, uint256 total, uint256 attack) external override view returns(string memory name, uint256[] memory stats, uint256 cat) {
+    function callCraft(
+        uint256[] calldata _mPic,
+        uint256[] calldata amounts,
+        uint256 cap,
+        uint256 total,
+        uint256 attack
+    ) external view override returns (string memory name, uint256[] memory stats, uint256 cat) {
         require(total > 0 && total <= cap.mul(1 ether), "KUNI: Materials Limit reached. Please reduce the number of materials");
         stats = _materialStasBatch(_mPic, amounts); // slash, heavy, strike, tech, magic
         (name, cat) = _toCraftNameCat(stats, attack);
