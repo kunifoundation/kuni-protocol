@@ -163,7 +163,6 @@ contract MetaData is Ownable, IMetaData {
   */
     function addNftBatch(uint256[] memory tokenIds, uint256[][] memory props) external override onlyOwner {
         for (uint256 index = 0; index < tokenIds.length; index++) {
-            // hand, weapon, head, eyes, body, hair;
             sarus[tokenIds[index]] = props[index];
         }
     }

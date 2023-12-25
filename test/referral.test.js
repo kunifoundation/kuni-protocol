@@ -7,12 +7,12 @@ const log = console.log;
 const {ZeroAddress} = ethers;
 
 describe("------------- REFERRAL ------------------", () => {
-    let developer, bob, alex, jame;
+    let developer, bob, alex, jame, lala, jeck;
     let tx;
 
     before(async function () {
         // account init
-        [developer, bob, alex, jame, ...addrs] = await ethers.getSigners();
+        [developer, bob, alex, jame, lala, jeck, ...addrs] = await ethers.getSigners();
         this.ow = developer;
         this.code = "AMAKUNI";
         this.referral = await (await ethers.deployContract("Referral", [developer.address, this.code])).waitForDeployment();
@@ -82,7 +82,7 @@ describe("------------- REFERRAL ------------------", () => {
     });
 
     it("test", async function () {
-        await await this.referral.connect(jame).applyCreateCode("AMA", "MY_AMA");
+        await (await this.referral.connect(jame).applyCreateCode("AMA", "MY_AMA")).wait();
         log(await this.referral.balanceUserOf(jame.address));
         log(await this.referral.balanceCodeOf("AMA"));
         log(await this.referral.balanceCodeOf("MY_AMA"));
@@ -92,4 +92,12 @@ describe("------------- REFERRAL ------------------", () => {
         log(await this.referral.codesOf(jame.address));
         log(await this.referral.codeRefOf("AMA"));
     });
+
+    it("03. Ref rate is zero or 100", async function () {
+        await (await this.referral.connect(jame).createCode("REATE_0", 0)).wait();
+        await (await this.referral.connect(jame).createCode("REATE_100", 10000)).wait();
+
+    })
+
+    
 });

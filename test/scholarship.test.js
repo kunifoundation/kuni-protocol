@@ -101,8 +101,9 @@ describe("------------- SCHOLARSHIP ------------------", () => {
     it("03. Scholarship transfer owner", async function () {
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(0);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(4);
-        await (await this.scholarship.connect(bob).askBatch(this.saruAddr, [1, 2, 3], [4000, 4100, 4500])).wait();
-        
+        await (await this.scholarship.connect(bob).askBatch(this.saruAddr, [1], [10000])).wait(); // 100%
+        await (await this.scholarship.connect(bob).askBatch(this.saruAddr, [2], [4000])).wait();
+        await (await this.scholarship.connect(bob).askBatch(this.saruAddr, [3], [0])).wait();
         expect(await this.scholarship.balanceOf(this.saruAddr, bob.address)).to.equal(3);
         expect(await this.kuniSaru.balanceOf(bob.address)).to.equal(1);
         expect(await this.scholarship.balanceOf(this.saruAddr, this.scholarshipAddr)).equal(3);

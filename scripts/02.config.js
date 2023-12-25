@@ -9,7 +9,7 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     const BALANCE_START = await ethers.provider.getBalance(deployer.address);
     let nonce = await ethers.provider.getTransactionCount(deployer.address);
-    log('nonce', nonce)
+    log('nonce', nonce, ethers.formatEther(BALANCE_START))
     
     // init contract from token
     const core = await loadContract()

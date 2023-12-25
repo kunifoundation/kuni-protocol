@@ -249,13 +249,6 @@ contract MiningKuni is ERC20("Kuni", "KUNI"), IMiningKuni, Ownable, ReentrancyGu
         _;
     }
 
-    // TODO: Mainnet remove
-    function testGas() external {
-        _gasStart();
-        for (uint256 index = 0; index < 100; index++) {}
-        _gasEnd();
-    }
-
     function gasStart() external override {
         _gasStart();
     }

@@ -1,8 +1,24 @@
+const { boolean } = require('hardhat/internal/core/params/argumentTypes');
+
+const mode = process.env.MODE
+let envFile = '.env_testnet';
+if (mode === 'mainnet') {
+    envFile = '.env'
+}
+require('dotenv').config({path: envFile})
+
+const IS_TESTNET = /^true$/i.test(process.env.IS_TESTNET);
+const FOUNDATION_ADDR = process.env.FOUNDATION_ADDR;
+const GENESIS_TIME = process.env.GENESIS_TIME; // 2024-01-03 10:00:00 GMT+07:00
+const REF_ROOT = process.env.REF_ROOT;
+const KUNI_SARU_ADDR = process.env.KUNI_SARU_ADDR;
+const META_ITEM_URL = process.env.META_ITEM_URL;
+
 module.exports = { 
-    IS_TESTNET: true,
-    FOUNDATION_ADDR: "0xD0eE5b7b9eB03eD630BdFcfb9A5b656773139C55", 
-    GENESIS_TIME: 1704250800, // 2024-01-03 10:00:00 GMT+07:00
-    REF_ROOT: "AMAKUNI",
-    KUNI_SARU_ADDR: "0x5fa891e95c948288A376C92fbd3AFc83D488d5a8",
-    META_ITEM_URL: "https://api.amakuni.com/api/kuni-item/"
+    IS_TESTNET,
+    FOUNDATION_ADDR, 
+    GENESIS_TIME, // 2024-01-03 10:00:00 GMT+07:00
+    REF_ROOT,
+    KUNI_SARU_ADDR,
+    META_ITEM_URL
 }

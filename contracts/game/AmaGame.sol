@@ -185,7 +185,6 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
         if (amount > 0) {
             IMiningKuni(miningKuni).mineKuniFrom(sender, ge, amount);
             IMaterial(ge).mint(miningKuni, amount);
-            emit EarnKuni(sender, amount);
             unclaimedGE[sender] = 0;
         }
     }
@@ -276,7 +275,6 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
             _equipmentCorrect(msg.sender, itemIds[i][2], 3);
             _equipmentCorrect(msg.sender, itemIds[i][3], 4);
             _equipmentCorrect(msg.sender, itemIds[i][4], 5);
-            // kiem tra trung item
 
             for (uint256 j = i + 1; j < len; j++) {
                 require(itemIds[i][0] != itemIds[j][0] || itemIds[j][0] == 0, "KUNI: Item Duplicated!");
@@ -424,6 +422,10 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
 
     function setEco(address addr) external onlyOwner {
         eco = IEcoGame(addr);
+    }
+
+    function setScholar(address addr) external onlyOwner {
+        scholar = IScholarship(addr);
     }
 
     function setFoundation(address foundation_) external onlyOwner {

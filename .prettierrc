@@ -13,7 +13,7 @@
       }
     },
     {
-      "files": "*.js",
+      "files": "*.js|*.json",
       "options": {
         "printWidth": 150,
         "tabWidth": 4,
@@ -22,5 +22,6 @@
         "bracketSpacing": false
       }
     }
+    
   ]
 }

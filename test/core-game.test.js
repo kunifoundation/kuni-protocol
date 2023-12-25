@@ -31,11 +31,14 @@ async function getBlockNumber(name) {
 
 async function checkApproved(self, tSaru, acc) {
     expect(tSaru).to.be.equal(await self.saru.balanceOf(acc.address));
-    if (!(await self.saru.isApprovedForAll(acc.address, self.gameAddr))) {
-        tx = await self.saru.connect(acc).setApprovalForAll(self.gameAddr, true);
-        await tx.wait();
+    await nftApproved(self.saru, acc, self.gameAddr)
+}
+
+async function nftApproved(saru, acc, spender) {
+    if (!(await saru.isApprovedForAll(acc.address, spender))) {
+        await (await saru.connect(acc).setApprovalForAll(spender, true)).wait();
     }
-    expect(true).to.be.eq(await self.saru.isApprovedForAll(acc.address, self.gameAddr));
+    expect(true).to.be.eq(await saru.isApprovedForAll(acc.address, spender));
 }
 
 async function deposit(self, acc, kuni, sarus) {
@@ -70,11 +73,11 @@ async function logMaterials(self, acc) {
 }
 
 describe("------------- STAKING TOKEN & SARU ------------------", () => {
-    let deployer, bob, alex, axi, founder;
+    let deployer, bob, alex, axi, founder, jul;
     let tx;
     before(async function () {
         // account init
-        [deployer, bob, alex, axi, founder, ...addrs] = await ethers.getSigners();
+        [deployer, bob, alex, axi, founder, jul, ...addrs] = await ethers.getSigners();
         this.owner = deployer;
         this.meta = await (await deployContract("MetaData")).waitForDeployment();
         this.eco = await (await deployContract("EcoGame", [await this.meta.getAddress()])).waitForDeployment();
@@ -182,6 +185,7 @@ describe("------------- STAKING TOKEN & SARU ------------------", () => {
         await cMintNft(this.saru, bob.address, 5);
         await cMintNft(this.saru, alex.address, 5);
         await cMintNft(this.saru, bob.address, 2);
+        await cMintNft(this.saru, axi.address, 8)
 
         await (await this.referal.connect(bob).applyCode("AMAKUNI")).wait();
         this.kuni = this.mining;
@@ -494,9 +498,37 @@ describe("------------- STAKING TOKEN & SARU ------------------", () => {
     })
 
     it('11. Test withdrawTokens', async function() {
+        const years = (5*365*24*60*60)/3; // 5 years
         await (await this.game.connect(bob).deposit(parseEther('1'), [1,2,3])).wait()
-        await mine(100)
         await (await this.game.connect(bob).withdrawTokens(0, [3])).wait()
+        await mine(years)
+        await (await this.game.connect(bob).claim()).wait()
+        log(formatEther(await this.ore.totalSupply()))
+        await mine(years)
+        await (await this.game.connect(bob).claim()).wait()
+        await mine(years)
+        await (await this.game.connect(bob).claim()).wait()
+        await mine(years)
+        await (await this.game.connect(bob).claim()).wait()
+        log(formatEther(await this.ore.totalSupply()))
         await expect(this.game.connect(alex).withdrawTokens(0, [3])).rejectedWith("KUNI: You are not the owner")
+    })
+
+    it('12. Scholarship', async function() {
+        await (await this.referal.connect(bob).createCode("BOB_0", 0)).wait()
+        await (await this.referal.connect(bob).createCode("BOB_100", 10000)).wait()
+        await (await this.referal.connect(axi).applyCreateCode("BOB_0", "AXI")).wait()
+        await nftApproved(this.saru, axi, await this.scholar.getAddress())
+        expect(await this.saru.ownerOf(17)).eq(axi.address )
+        await (await this.scholar.connect(axi).askBatch(await this.saru.getAddress(), [17, 19], [0, 10000])).wait();
+        await (await this.game.connect(axi).fighting([18], [])).wait()
+        log('$GE', ethers.formatEther(await this.game.unclaimedGE(axi.address)))
+        await expect(await this.game.unclaimedGE(axi.address)).eq(ethers.parseEther('15'))
+        await (await this.referal.connect(jul).applyCreateCode("BOB_100", "JUL")).wait() // ref 100%
+        await (await this.game.connect(jul).fighting([19], [])).wait()
+        await expect(await this.game.unclaimedGE(axi.address)).eq(ethers.parseEther('25'))
+        await expect(await this.game.unclaimedGE(jul.address)).eq(ethers.parseEther('0'))
+        await (await this.game.connect(jul).fighting([17], [])).wait()
+        await expect(await this.game.unclaimedGE(jul.address)).eq(ethers.parseEther('20'))
     })
 });

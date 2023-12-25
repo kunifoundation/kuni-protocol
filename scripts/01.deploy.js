@@ -2,17 +2,13 @@ const {ethers} = require("hardhat");
 const { 
     IS_TESTNET, FOUNDATION_ADDR, REF_ROOT, KUNI_SARU_ADDR, GENESIS_TIME 
 } = require('./00.load-env')
+
 const {writeWithToken} = require("../js-commons/io");
-const {mainConfig} = require('./02.config');
-const {initMetaData} = require('./03.init-metadata');
-const {transferFoundation} = require('./04.transfer-foundation');
-const { testGameInTestnet } = require("./05.deploy.test");
 
 
 const {deployContract, getContractFactory} = ethers;
 
 const log = console.log;
-
 async function main() {
     let foundation = FOUNDATION_ADDR;
     let refRoot = REF_ROOT;
@@ -25,6 +21,7 @@ async function main() {
 
     log(`======= DEPLOY..... ========\n`);
     log("DEPLOY COMMON...");
+    console.log(IS_TESTNET, KUNI_SARU_ADDR);
     if (IS_TESTNET) {
         genesisTime = 0;
         foundation = wFounder.address;
@@ -102,13 +99,6 @@ async function main() {
 
     log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
     writeWithToken(TOKENS, "contract.js", 0, "json");
-
-    if (IS_TESTNET) {
-        await mainConfig()
-        await initMetaData()
-        await transferFoundation({ foundation })
-        await testGameInTestnet({alex, bob, wFounder})
-    }
 }
 
 main()
