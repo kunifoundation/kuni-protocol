@@ -59,6 +59,7 @@ module.exports.initSaruData = async function(cMetadata, min, max, isLog=true) {
   await (await cMetadata.addNftBatch(saruData.keys, saruData.vals)).wait()
   if (isLog)
     console.log(`Saru Index: ${min} => ${max}`)
+  await sleep(2000);
 }
 
 

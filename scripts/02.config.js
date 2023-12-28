@@ -31,7 +31,7 @@ async function main() {
     await (await core.ge.addMinter(TOKENS.amaGame, {nonce: ++nonce})).wait();
     log('config store game')
     await (await core.storeGame.updateGame(TOKENS.amaGame, TOKENS.amaInv, {nonce: ++nonce})).wait();
-    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
+    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "BNB");
 }
 
 main()

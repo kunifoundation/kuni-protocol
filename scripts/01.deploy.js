@@ -87,7 +87,7 @@ async function main() {
 
     log("\n=========== TOKEN DEPLOYED! ===========\n");
 
-    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
+    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "BNB");
     writeWithToken(TOKENS, "contract.js", 0, "json");
 }
 

@@ -1,7 +1,6 @@
 const {ethers} = require("hardhat");
 const loadContract = require('./attach-contract')
 const {initPowerEffData, initCraftData, initSaruData} = require("../js-commons/ama-data");
-const { IS_TESTNET } = require('./00.load-env')
 
 const log = console.log;
 
@@ -44,7 +43,7 @@ async function main() {
     start = await initSaru(start);
     start = await initSaru(start);
     start = await initSaru(start);
-    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
+    log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "BNB");
 }
 
 main()

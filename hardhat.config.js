@@ -27,9 +27,9 @@ module.exports = {
       accounts: mnemonic_testnet.split(',')
     },
     mainnet: {
-        url: 'https://bsc.drpc.org',  
+        url: 'https://bsc-dataseed1.binance.org',  
         chainId: 56,
-        gasPrice: 5000000000,
+        gasPrice: 3000000000,
         accounts: mnemonic_mainnet.split(',')
       },
   },
