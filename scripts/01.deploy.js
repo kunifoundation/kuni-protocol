@@ -1,6 +1,6 @@
 const {ethers} = require("hardhat");
 const { 
-    IS_TESTNET, FOUNDATION_ADDR, REF_ROOT, KUNI_SARU_ADDR, GENESIS_TIME 
+    FOUNDATION_ADDR, REF_ROOT, KUNI_SARU_ADDR, GENESIS_TIME 
 } = require('./00.load-env')
 
 const {writeWithToken} = require("../js-commons/io");
@@ -14,25 +14,15 @@ async function main() {
     let refRoot = REF_ROOT;
     let TOKENS = {kuniSaru: KUNI_SARU_ADDR};
     let genesisTime = GENESIS_TIME;
-    const [deployer, alex, bob, wFounder, ...addrs] = await ethers.getSigners();
+    const [deployer, ...addrs] = await ethers.getSigners();
 
     const BALANCE_START = await ethers.provider.getBalance(deployer.address);
     let nonce = await ethers.provider.getTransactionCount(deployer.address);
 
     log(`======= DEPLOY..... ========\n`);
     log("DEPLOY COMMON...");
-    console.log(IS_TESTNET, KUNI_SARU_ADDR);
-    if (IS_TESTNET) {
-        genesisTime = 0;
-        foundation = wFounder.address;
-        this.saru = await (await deployContract("KuniSaru")).waitForDeployment({nonce: ++nonce});
-        TOKENS.kuniSaru = await this.saru.getAddress();
-    } else {
-        this.saru = (await (getContractFactory("KuniSaru"))).attach(TOKENS.kuniSaru)
-    }
-
+    this.saru = (await (getContractFactory("KuniSaru"))).attach(TOKENS.kuniSaru)
     log('FOUNDATION ADDRESS: ', foundation)
-    
     log("1. KuniSaru: ", TOKENS.kuniSaru);
     this.referral = await (await deployContract("Referral", [foundation, refRoot])).waitForDeployment({nonce: ++nonce});
     TOKENS.referral = await this.referral.getAddress();
