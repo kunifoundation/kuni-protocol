@@ -344,7 +344,7 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
             pool.lastRewardBlock = block.number;
             return;
         }
-        uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
+        uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(address(this), pool.lastRewardBlock, block.number);
         if (rewardForMiner > 0) {
             IMaterial(mToken).mint(address(this), rewardForMiner);
         }
@@ -379,7 +379,7 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
         UserInfo storage user = userInfo[mToken][sender];
         uint256 reward = user.pendingReward;
         if (pool.supply > 0) {
-            uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(pool.lastRewardBlock, block.number);
+            uint256 rewardForMiner = IMaterial(mToken).getRewardForMiner(address(this), pool.lastRewardBlock, block.number);
             uint256 share = pool.rewardPerShare.add(rewardForMiner.mul(MAGIC_NUM).div(pool.supply));
             reward = reward.add((user.amount.mul(share).div(MAGIC_NUM)).sub(user.rewardDebt));
         }

@@ -18,6 +18,7 @@ contract Material is ERC20, Ownable, IMaterial {
     uint256 NUM_OF_BLOCK_PER_DAY = 28800;
     uint256 RATE = 5;
     uint256 BASE_RATE = 10000;
+    uint256 BLOCK_LIMIT = 90 * 24 * 60 * 60 / 3;
 
     address public minter;
 
@@ -27,9 +28,14 @@ contract Material is ERC20, Ownable, IMaterial {
         _mint(to, amount);
     }
 
-    function getRewardForMiner(uint256 _from, uint256 _to) external view override returns (uint256) {
-        if (!_minter.contains(msg.sender)) return 0;
-        return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
+    function getRewardForMiner(address addr, uint256 _from, uint256 _to) external view override returns (uint256) {
+        if (!_minter.contains(addr)) return 0;
+
+        uint256 duration =  _to.sub(_from);
+        if (duration > BLOCK_LIMIT) {
+            duration = BLOCK_LIMIT;
+        }
+        return duration.mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
     }
 
     modifier onlyMinter() {
