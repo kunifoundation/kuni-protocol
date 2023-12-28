@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "../interfaces/IERC721Mint.sol";
 
-contract KuniItem is ERC721("KuniItem", "KUNIITEM"), ERC721Enumerable, ERC721Burnable, Ownable, IERC721Mint {
+contract KuniItem is ERC721("Kuni Item", "KUNIITEM"), ERC721Enumerable, ERC721Burnable, Ownable, IERC721Mint {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     struct Meta {

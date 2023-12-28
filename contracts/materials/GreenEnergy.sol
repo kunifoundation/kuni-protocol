@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "../interfaces/IERC20Burnable.sol";
 import "../interfaces/IERC20Mint.sol";
 
-contract GreenEnergy is ERC20("GreenEnergy", "GE"), Ownable, IERC20Burnable, IERC20Mint {
+contract GreenEnergy is ERC20("Green Energy", "GE"), Ownable, IERC20Burnable, IERC20Mint {
     using EnumerableSet for EnumerableSet.AddressSet;
     EnumerableSet.AddressSet private _minter;
 
