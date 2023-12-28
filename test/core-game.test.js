@@ -531,4 +531,18 @@ describe("------------- STAKING TOKEN & SARU ------------------", () => {
         await (await this.game.connect(jul).fighting([17], [])).wait()
         await expect(await this.game.unclaimedGE(jul.address)).eq(ethers.parseEther('20'))
     })
+
+    it('13. remove minter', async function() {
+        await (await this.ore.removeMinter(await this.game.getAddress())).wait()
+        await (await this.lumber.removeMinter(await this.game.getAddress())).wait()
+        await (await this.cotton.removeMinter(await this.game.getAddress())).wait()
+        await (await this.stone.removeMinter(await this.game.getAddress())).wait()
+        await (await this.game.connect(bob).claim()).wait()
+    })
+
+    it('14. diposit saru & kuni', async function() {
+        await deposit(this, bob, parseEther('0.5'), [11, 12]);
+        await (await this.game.connect(bob).claim()).wait()
+        await checkDepositAfter(this, bob, 4, 4);
+    })
 });

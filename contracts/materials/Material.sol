@@ -28,6 +28,7 @@ contract Material is ERC20, Ownable, IMaterial {
     }
 
     function getRewardForMiner(uint256 _from, uint256 _to) external view override returns (uint256) {
+        if (!_minter.contains(msg.sender)) return 0;
         return _to.sub(_from).mul(MAX_SUPPLY.sub(totalSupply()).mul(RATE).div(BASE_RATE)).div(NUM_OF_BLOCK_PER_DAY);
     }
 
