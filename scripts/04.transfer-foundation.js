@@ -28,9 +28,7 @@ async function main({foundation}) {
     log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
 }
 
-if (!IS_TESTNET)
-    main({ foundation: FOUNDATION_ADDR })
-        .catch((err) => log(err))
-        .then(() => log("========= METADATA INITIALIZED ========="));
-
-module.exports.transferFoundation = main
+main({ foundation: FOUNDATION_ADDR })
+    .catch((err) => log(err))
+    .then(() => log("========= METADATA INITIALIZED ========="));
+    

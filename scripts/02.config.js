@@ -1,6 +1,5 @@
 const {ethers} = require("hardhat");
 const loadContract = require('./attach-contract')
-const { IS_TESTNET } = require('./00.load-env')
 const TOKENS = require("./contract.json")
 
 const log = console.log;
@@ -35,11 +34,9 @@ async function main() {
     log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
 }
 
-if (!IS_TESTNET)
-    main()
-        .catch((err) => log(err))
-        .then(() => log("========= CONFIGURATION COMPLETED! ========="));
+main()
+    .catch((err) => log(err))
+    .then(() => log("========= CONFIGURATION COMPLETED! ========="));
 
-module.exports.mainConfig = main
 
 

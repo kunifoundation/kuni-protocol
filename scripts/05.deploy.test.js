@@ -17,9 +17,7 @@ function sleep(ms) {
 async function approveToken(token, acc, spender) {
     console.log("token", await token.name(), formatEther(await token.balanceOf(acc.address)));
     if ((await token.allowance(acc.address, spender)) <= 0) {
-        const t = await token.connect(acc).approve(spender, MaxUint256);
-        await t.wait();
-        // await sleep(150);
+        await (await token.connect(acc).approve(spender, MaxUint256)).await();
     }
 }
 

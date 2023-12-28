@@ -439,10 +439,6 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
         }
     }
 
-    function setGenesisTime(uint256 _start) external onlyOwner {
-        getGenesisTime = _start;
-    }
-
     modifier onlyStart() {
         require(getGenesisTime <= block.timestamp, "KUNI: Not open!");
         _;

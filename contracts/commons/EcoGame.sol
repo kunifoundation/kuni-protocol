@@ -364,9 +364,10 @@ contract EcoGame is IEcoGame, Ownable, IData {
         uint256[] memory mValues = new uint256[](4);
         uint256[] memory multipliers = _getContinentalMultiplierArr(sender);
         for (uint256 index = 0; index < tokenIds.length; index++) {
-            uint256[] memory eff = _calProductivity(kuniAmount, tokenIds[index]);
+            uint256[] memory eff = _productionEfficiencyArr(tokenIds[index]);
             for (uint256 j = 0; j < eff.length; j++) {
-                mValues[j] = mValues[j].add(eff[j]);
+                uint256 _value = eff[j].mul(kuniAmount).div(MAGIC_NUM);
+                mValues[j] = mValues[j].add(_value);
             }
         }
 
@@ -377,15 +378,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         return mValues;
     }
 
-    function _calProductivity(uint256 amount, uint256 tokenId) internal view returns (uint256[] memory eff) {
-        eff = _productionEfficiencyArr(tokenId);
-        uint256 total = 0;
-        for (uint256 index = 0; index < eff.length; index++) {
-            total = total.add(eff[index]);
-        }
-
-        for (uint256 index = 0; index < eff.length; index++) {
-            eff[index] = eff[index].mul(amount).div(total);
-        }
+    function setMeta(address _kuniMeta) external onlyOwner {
+        meta = IMetaData(_kuniMeta);
     }
 }
