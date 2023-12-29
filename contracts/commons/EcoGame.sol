@@ -353,10 +353,7 @@ contract EcoGame is IEcoGame, Ownable, IData {
         uint256 total,
         uint256 attack
     ) external view override returns (string memory name, uint256[] memory stats, uint256 cat) {
-        uint256 minCap = 1;
-        if (cap.sub(CAP_INIT) > 0) {
-            minCap = (cap.sub((CAP_INIT))).div(CAP_STEP);
-        }
+        uint256 minCap = (cap.sub((CAP_INIT))).div(CAP_STEP).add(1);
         require(total >= minCap.mul(1 ether) && total <= cap.mul(1 ether), "KUNI: Materials Limit reached. Please reduce the number of materials");
         stats = _materialStasBatch(_mPic, amounts); // slash, heavy, strike, tech, magic
         (name, cat) = _toCraftNameCat(stats, attack);
