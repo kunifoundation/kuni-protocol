@@ -329,7 +329,11 @@ describe("------------- STAKING TOKEN & SARU ------------------", () => {
     });
 
     it("07. craft item", async function () {
-        await mine(1000);
+        await mine(100000);
+        await (await this.game.connect(bob).claim()).wait()
+        await mine(100000);
+        await (await this.game.connect(bob).claim()).wait()
+        await mine(100000);
         await (await this.game.connect(bob).withdraw()).wait();
         await (await this.game.connect(bob).claim()).wait()
         const invAddr = await this.inv.getAddress();
@@ -352,53 +356,51 @@ describe("------------- STAKING TOKEN & SARU ------------------", () => {
             await rs.wait();
         }
 
-        await fnCraft(bob, ["ore"], [5], 0);
-        await fnCraft(bob, ["stone"], [5], 0);
-        await fnCraft(bob, ["cotton"], [5], 0);
-        await fnCraft(bob, ["lumber"], [5], 0);
-
-        await fnCraft(bob, ["ore", "cotton"], [5, 4], 1);
-        await fnCraft(bob, ["ore", "stone"], [5, 2], 1);
-
-        await fnCraft(bob, ["ore"], [5], 0);
-        await fnCraft(bob, ["stone"], [5], 0);
-        await fnCraft(bob, ["cotton"], [5], 0);
-        await fnCraft(bob, ["lumber"], [5], 0);
-
-        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
-        await fnCraft(bob, ["stone", "cotton"], [5, 2], 1);
-        await fnCraft(bob, ["stone", "lumber"], [5, 2], 1);
-        await fnCraft(bob, ["cotton", "lumber"], [5, 2], 1);
-        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
-        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
-        await fnCraft(bob, ["ore", "lumber"], [5, 2], 1);
-
-
-
-        await fnCraft(bob, ["ore"], [2], 0);
+        await fnCraft(bob, ["ore"], [1], 0);
         await fnCraft(bob, ["stone"], [2], 0);
-        await fnCraft(bob, ["cotton"], [6], 0);
+        await fnCraft(bob, ["cotton"], [3], 0);
         await fnCraft(bob, ["lumber"], [4], 0);
 
-        await fnCraft(bob, ["ore"], [2], 0);
-        await fnCraft(bob, ["stone"], [2], 0);
-        await fnCraft(bob, ["cotton"], [6], 0);
-        await fnCraft(bob, ["lumber"], [4], 0);
+        await fnCraft(bob, ["ore", "cotton"], [3, 2], 1);
+        await fnCraft(bob, ["ore", "stone"], [4, 2], 1);
 
-        await fnCraft(bob, ["ore"], [2], 0);
-        await fnCraft(bob, ["stone"], [2], 0);
-        await fnCraft(bob, ["cotton"], [6], 0);
-        await fnCraft(bob, ["lumber"], [4], 0);
+        await fnCraft(bob, ["ore"], [7], 0);
+        await fnCraft(bob, ["stone"], [8], 0);
+        await fnCraft(bob, ["cotton"], [9], 0);
+        await fnCraft(bob, ["lumber"], [10], 0);
 
-        await fnCraft(bob, ["ore"], [2], 0);
-        await fnCraft(bob, ["stone"], [2], 0);
-        await fnCraft(bob, ["cotton"], [6], 0);
-        await fnCraft(bob, ["lumber"], [4], 0);
+        await fnCraft(bob, ["ore", "lumber"], [20, 2], 1);
+        await fnCraft(bob, ["stone", "cotton"], [20, 2], 1);
+        await fnCraft(bob, ["stone", "lumber"], [20, 2], 1);
+        await fnCraft(bob, ["cotton", "lumber"], [20, 2], 1);
+        await fnCraft(bob, ["ore", "lumber"], [20, 2], 1);
+        await fnCraft(bob, ["ore", "lumber"], [20, 2], 1);
+        await fnCraft(bob, ["ore", "lumber"], [20, 2], 1);
 
-        await fnCraft(bob, ["ore"], [2], 0);
-        await fnCraft(bob, ["stone"], [2], 0);
-        await fnCraft(bob, ["cotton"], [6], 0);
-        await fnCraft(bob, ["lumber"], [4], 0);
+        await fnCraft(bob, ["ore"], [41], 0);
+        await fnCraft(bob, ["stone"], [41], 0);
+        await fnCraft(bob, ["cotton"], [41], 0);
+        await fnCraft(bob, ["lumber"], [41], 0);
+
+        await fnCraft(bob, ["ore"], [41], 0);
+        await fnCraft(bob, ["stone"], [42], 0);
+        await fnCraft(bob, ["cotton"], [46], 0);
+        await fnCraft(bob, ["lumber"], [41], 0);
+
+        await fnCraft(bob, ["ore"], [42], 0);
+        await fnCraft(bob, ["stone"], [42], 0);
+        await fnCraft(bob, ["cotton"], [46], 0);
+        await fnCraft(bob, ["lumber"], [44], 0);
+
+        await fnCraft(bob, ["ore"], [42], 0);
+        await fnCraft(bob, ["stone"], [42], 0);
+        await fnCraft(bob, ["cotton"], [46], 0);
+        await fnCraft(bob, ["lumber"], [44], 0);
+
+        await fnCraft(bob, ["ore"], [42], 0);
+        await fnCraft(bob, ["stone"], [42], 0);
+        await fnCraft(bob, ["cotton"], [46], 0);
+        await fnCraft(bob, ["lumber"], [44], 0);
 
         log(await this.item.lastTokenIdOf(1));
         log(await this.item.lastTokenIdOf(2));
