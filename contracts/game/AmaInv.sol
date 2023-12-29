@@ -17,9 +17,12 @@ contract AmaInv is IAmaInv, Ownable, ReentrancyGuard {
 
     mapping(address => uint256) public materialPic;
     mapping(address => uint256) public currentCap;
+    mapping(address => uint256) public minCapOf;
 
     uint256 CAP_INIT = 20;
     uint256 STEP = 2;
+    uint256 MIN_STEP = 1;
+    uint256 MIN_CAP = 1;
 
     address public kuniItem;
     IEcoGame private eco;
@@ -51,15 +54,22 @@ contract AmaInv is IAmaInv, Ownable, ReentrancyGuard {
             }
         }
         uint256 cap = _currentCapOf(msg.sender);
+        uint256 mCap = _minCapOf(msg.sender);
+        require(total >= mCap.mul(1 ether), "KUNI: Total cap is too low");
         (string memory name, uint256[] memory stats, uint256 cat) = eco.callCraft(pic, amounts, cap, total, attack);
         IERC721Mint(kuniItem).safeMint(msg.sender, name, stats, cat);
         uint256 tokenId = IERC721Mint(kuniItem).currentId(cat);
         currentCap[msg.sender] = cap.add(STEP);
+        minCapOf[msg.sender] = mCap.add(MIN_STEP);
         emit Craft(msg.sender, tokenId);
     }
 
     function _currentCapOf(address acc) internal view returns (uint256) {
         return currentCap[acc] == 0 ? CAP_INIT : currentCap[acc];
+    }
+
+    function _minCapOf(address acc) internal view returns (uint256) {
+        return minCapOf[acc] == 0 ? MIN_CAP : minCapOf[acc];
     }
 
     function setMaterialPic(address[] calldata materialAddr, uint256[] calldata pic) external onlyOwner {
