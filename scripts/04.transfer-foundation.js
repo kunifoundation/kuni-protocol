@@ -24,7 +24,7 @@ async function main({foundation}) {
     await (await core.lumber.transferOwnership(foundation, {nonce: nonce++})).wait()
     await (await core.ge.transferOwnership(foundation, {nonce: nonce++})).wait()
     await (await core.kuniItem.transferOwnership(foundation, {nonce: nonce++})).wait()
-
+    await (await core.kuniSaru.transferOwnership(foundation, {nonce: nonce++})).wait() 
     log("Balance Fee: ", ethers.formatEther(BALANCE_START - (await ethers.provider.getBalance(deployer.address))), "ETH");
 }
 
