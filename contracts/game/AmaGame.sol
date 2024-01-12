@@ -18,7 +18,6 @@ import "../interfaces/IScholarship.sol";
 
 contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
     using SafeMath for uint256;
-    using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
     mapping(address => uint256) private _battleBonus;
