@@ -64,6 +64,23 @@ contract EcoGame is IEcoGame, Ownable, IData {
         return (stage ** 2).mul(1 ether);
     }
 
+    function calScore(
+        uint256[] calldata tokenIds,
+        address kuniItem,
+        uint256[][] calldata items,
+        uint256 stage,
+        uint256 bonus) external view returns(uint256 power, uint256 apKuni, uint256 apNioh) {
+        power = _niohPower(stage);
+        (
+            NFTPartProp memory niohAttack,
+            NFTPartProp memory niohDefend,
+            NFTPartProp memory kuniAttack,
+            NFTPartProp memory kuniDefend,
+        ) = _calPower(tokenIds, kuniItem, items, stage, bonus, power);
+        apKuni = _advantagePoint(kuniAttack, niohDefend);
+        apNioh = _advantagePoint(niohAttack, kuniDefend);
+    }
+
     function advantagePoint(
         uint256[] calldata tokenIds,
         address kuniItem,
@@ -72,7 +89,6 @@ contract EcoGame is IEcoGame, Ownable, IData {
         uint256 bonus
     ) external view override returns (bool won, uint256 totalItem, uint256 power) {
         power = _niohPower(stage);
-
         (
             NFTPartProp memory niohAttack,
             NFTPartProp memory niohDefend,
@@ -134,9 +150,9 @@ contract EcoGame is IEcoGame, Ownable, IData {
         score = score.add(_calAdvantagePoint(_att.magic, _de.magic));
     }
 
-    // // attack * (100/(100 + defend))
+    // // (attack * 100)/(100 + defend)
     function _calAdvantagePoint(uint256 _attack, uint256 _defend) internal pure returns (uint256) {
-        return _attack.mul(MAGIC_NUM.mul(100 ether).div(_defend.add(100 ether)));
+        return _attack.mul(100 ether).div(_defend.add(100 ether));
     }
 
     // CRAFT

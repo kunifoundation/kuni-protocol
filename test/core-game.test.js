@@ -547,4 +547,10 @@ describe("------------- STAKING TOKEN & SARU ------------------", () => {
         await (await this.game.connect(bob).claim()).wait()
         await checkDepositAfter(this, bob, 4, 4);
     })
+
+    it("15. Get score", async function() {
+        const [power, apSaru, apNioh] = await this.eco.calScore([1], await this.item.getAddress(), [], 1, 0)
+        expect(power).eq(parseEther('1'))
+        log(formatEther(apSaru), formatEther(apNioh))
+    })
 });
