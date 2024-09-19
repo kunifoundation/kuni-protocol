@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IAmaGame.sol";
 import "../interfaces/IEcoGame.sol";
 import "../interfaces/IMaterial.sol";
@@ -19,7 +19,8 @@ import "../interfaces/IScholarship.sol";
 contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
     using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
-
+    using SafeERC20 for IERC20;
+    
     mapping(address => uint256) private _battleBonus;
     mapping(address => uint256) private stages;
 
@@ -82,9 +83,10 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
         }
 
         if (kuniAmount > 0) {
-            IERC20(miningKuni).transferFrom(msg.sender, address(this), kuniAmount);
+            IERC20(miningKuni).safeTransferFrom(msg.sender, address(this), kuniAmount);
             kuniStakedOf[msg.sender] = kuniStakedOf[msg.sender].add(kuniAmount);
         }
+
         // call
         effTeam = eco.calProductivityTeam(msg.sender, _nftSaru[msg.sender].values(), kuniStakedOf[msg.sender]);
         for (uint256 inx = 0; inx < getMaterials.length; inx++) {
@@ -109,6 +111,7 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
     }
 
     function withdrawTokens(uint256 kuniAmount, uint256[] calldata tokenIds) external override nonReentrant {
+        require(kuniAmount <= kuniStakedOf[msg.sender], "KUNI: Unable to process request");
         if (tokenIds.length > 0) {
             // saru withdraw
             for (uint256 inx = 0; inx < tokenIds.length; inx++) {
@@ -117,6 +120,7 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
             }
         }
 
+        
         if (kuniAmount > 0) {
             // transfer $kuni
             _transferToken(miningKuni, kuniAmount);
@@ -416,7 +420,7 @@ contract AmaGame is IAmaGame, Ownable, IERC721Receiver, ReentrancyGuard {
         if (amount > canTransf) {
             amount = canTransf;
         }
-        IERC20(mToken).transfer(msg.sender, amount);
+        IERC20(mToken).safeTransfer(msg.sender, amount);
     }
 
     function setEco(address addr) external onlyOwner {
