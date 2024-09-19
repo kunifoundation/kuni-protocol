@@ -24,7 +24,7 @@ contract StoreGame is IStoreGame, Ownable {
 
     function _capOf(address player) internal view returns (uint256) {
         uint256 c = IAmaInv(invGame).currentCapOf(player);
-        return c == 0 ? 10 : c;
+        return c == 0 ? 20 : c;
     }
 
     function playInfo(address player) external view returns (uint256 cap, uint256 bonus, uint256 stage) {
